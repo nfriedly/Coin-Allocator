@@ -27,8 +27,17 @@ var async = require('async');
 var util = require('util');
 
 var d = require('domain').create();
-d.on('error', function(er) {
-    console.error((er && er.stack) || er);
+d.on('error', function(err) {
+    if (!err) { // this shouldn't happen, but better safe than sorry
+        console.error("Unknown Error: " + err);
+        return process.exit(3);
+    }
+    if (_.contains(err.message, '<html>')) {
+        console.error(err.message);
+        console.error('Remote API appears to be down, please try again in a few minutes');
+        return process.exit(2);
+    }
+    console.error(err.stack || err);
     process.exit(1);
 });
 d.run(function() {
@@ -37,13 +46,8 @@ d.run(function() {
         if (currency == targetCurrency) {
             return 1;
         }
-        var market = markets[currency + '/' + targetCurrency];
-        if (market) {
-            return market.lasttradeprice;
-        }
-        market = markets[targetCurrency + '/' + currency];
-        if (market) {
-            return 1 / market.lasttradeprice;
+        if (markets[currency] && markets[currency][targetCurrency]) {
+            return markets[currency][targetCurrency].ratio;
         }
         throw new Error(util.format('Unable to directly convert %s to %s, no market found', currency, targetCurrency));
     }
@@ -54,15 +58,15 @@ d.run(function() {
 
     console.log('fetching data...');
     async.auto({
-        prices: function(cb) {
-            exchange.getPrices(currencies, cb);
+        markets: function(cb) {
+            exchange.getMarkets(currencies, cb);
         },
         balances: function(cb) {
             exchange.getBalances(currencies, cb);
         },
-        balancesInPrimary: ['balances', 'prices',
+        balancesInPrimary: ['balances', 'markets',
             function(cb, results) {
-                cb(null, _.mapValues(results.balances, convertTo.bind(null, primaryCurrency, results.prices)));
+                cb(null, _.mapValues(results.balances, convertTo.bind(null, primaryCurrency, results.markets)));
             }
         ],
 
@@ -74,7 +78,7 @@ d.run(function() {
                 });
                 var targetInPrimary = totalInPrimary / Object.keys(results.balances).length;
                 var targetBalances = _.mapValues(results.balancesInPrimary, function(amount, currency) {
-                    return targetInPrimary * getRatio(currency, results.prices, primaryCurrency);
+                    return targetInPrimary * getRatio(currency, results.markets, primaryCurrency);
                 });
                 cb(null, targetBalances);
             }
