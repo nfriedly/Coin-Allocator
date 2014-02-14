@@ -42,7 +42,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-jsbeautifier');
     grunt.loadNpmTasks('grunt-contrib-watch');
 
-    grunt.registerTask('default', ['jshint', 'jasmine_node', 'jsbeautifier:verify']);
+    grunt.registerTask('default', ['jsbeautifier:rewrite', 'jshint', 'jasmine_node']);
+    grunt.registerTask('test', ['jshint', 'jasmine_node', 'jsbeautifier:verify']);
     grunt.registerTask('beautify', 'jsbeautifier:rewrite');
 
 

@@ -1,4 +1,3 @@
-/* globals describe, beforeEach, it, jasmine, spyOn, expect*/
 describe('Cryptsy API adapter', function() {
     var Cryptsy = require('../exchanges/cryptsy.js');
     var marketDataV2 = require('./data/cryptsy/marketdatav2.json');

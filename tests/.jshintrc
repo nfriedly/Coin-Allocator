@@ -1,0 +1,13 @@
+{
+    "node": true,
+    "unused": true,
+    "undef": true,
+    "globals": {
+        "jasmine": false,
+        "describe": false,
+        "beforeEach": false,
+        "it": false,
+        "spyOn": false,
+        "expect": false
+    }
+}

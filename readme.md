@@ -5,16 +5,16 @@ Coin Allocator
 
 Taking the lessons from [The Intelligent Asset Allocator](http://www.amazon.com/gp/product/0071362363/ref=as_li_ss_il?ie=UTF8&camp=1789&creative=390957&creativeASIN=0071362363&linkCode=as2&tag=nfriedly-20) and applying them to BitCoin and friends via [Cryptsy](https://www.cryptsy.com/users/register?refid=154285).
 
-Currently just reviews your balances and suggests a new allocation. I plan on adding automatic rebalancing in the future.
+Currently just reviews your balances and suggests a new allocation and a nieve set of trades to get there. I plan optimizing the trades to reduce the fees and take advantage of any arbitrage opportunities, and then give the option to automatically rebalance using the optimized trades.
 
 Setup
 -----
 
-[Turn on the API](https://www.cryptsy.com/users/settings) and set your `CRYPTSY_PUBLIC_KEY` and `CRYPTSY_PRIVATE_KEY` env vars to the appropriate values, then run `node index.js`. 
+[Turn on the API](https://www.cryptsy.com/users/settings) and set your `CRYPTSY_PUBLIC_KEY` and `CRYPTSY_PRIVATE_KEY` env vars to the appropriate values, then run `node cli.js`. 
 
-You may also want to edit the `currencies` and `primaryCurrency` lines in `index.js`. 
+You may also want to edit the `currencies` and `primaryCurrency` lines in `cli.js`. 
 
-Note: all of your currencies must be directly convertible to your primary currency via the cryptsy API, or it will fail.
+Note: all of your currencies must be directly convertible to your primary currency via the cryptsy API, or it will fail. (This means, in effect, that your primary currency must be BTC or LTC). I plan on adding the ability to find indirect paths from one currency to another eventually.
 
 Common Issues
 -------------
@@ -24,18 +24,13 @@ Cryptsy's API frequently dies. In that case, you'll see an error message, usuall
 Todo
 ----
 
-* Suggest trades to-and-from primary currency to rebalance account
-* Optimize trades to skip primary currency when appropriate (goal is lower total trade volume)
-* Create threshold of when to skip a trade 
-* Find appropriate value for the above threshold
+* Clean up CLI and add `npm install -g` support
+* Optimize trades to lower fees and take advantage of any arbitrage opportunities
+* Create threshold of when to skip a trade and find an appropriate default value
 * Add option to automatically execute suggested trades
-* Finish testing Cryptsy API wrapper
-* Test core code
-* add jsbeautify tasks
-* Automate tests
 * Set up live instance to rebalance my account
-* Separate CLI from core lib
 * Support allocation by percentage
 * Support auto-selling balances in non-target currencies
 * Better error for bogus / unsupported currencies
 * Support A->B->C paths even when B is not a requested currency
+* Add support for BTC-e (and other exchanges?)
