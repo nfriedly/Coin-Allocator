@@ -4,7 +4,7 @@
   "description": "Tool to automatically rebalance various cryptoins via the cryptsy API",
   "main": "index.js",
   "scripts": {
-    "test": "tests/test.js",
+    "test": "grunt",
     "get-cryptsy-market-ids": "scripts/get-cryptsy-market-ids.js 1 > data/cryptsy-market-ids.json && cat data/cryptsy-market-ids.json"
   },
   "repository": {

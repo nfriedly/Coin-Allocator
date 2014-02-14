@@ -17,7 +17,6 @@ var privateKey = process.env.CRYPTSY_PRIVATE_KEY;
 var currencies = ['BTC', 'LTC', 'DOGE'];
 var primaryCurrency = 'BTC';
 
-
 if (!publicKey || !privateKey) throw 'CRYPTSY_PUBLIC_KEY and CRYPTSY_PRIVATE_KEY env vars must be set';
 
 var Cryptsy = require('./exchanges/cryptsy');
@@ -33,10 +32,6 @@ d.on('error', function(er) {
     process.exit(1);
 });
 d.run(function() {
-
-    function api(name, params, cb) {
-        cryptsy.api(name, params, d.intercept(cb));
-    }
 
     function getRatio(targetCurrency, markets, currency) {
         if (currency == targetCurrency) {
