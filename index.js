@@ -1,16 +1,9 @@
 /**
-Cryptsy API
+ * Coin Allocator
+ * Takes your current balances in various crypto coins and the current market prices, and suggests a new allocation to even things out.
+ * Future versions will automatically execute the transactions
+ */
 
-https://www.cryptsy.com/pages/api
-
-http://pubapi.cryptsy.com/api.php?method=marketdatav2
-
-"DOGE\/LTC":{"marketid":"135"
-"DOGE\/BTC":{"marketid":"132"
-"LTC\/BTC":{"marketid":"3",
-"marketid":"5","label":"FTC\/BTC"
-
-**/
 // configuration
 var publicKey = process.env.CRYPTSY_PUBLIC_KEY;
 var privateKey = process.env.CRYPTSY_PRIVATE_KEY;

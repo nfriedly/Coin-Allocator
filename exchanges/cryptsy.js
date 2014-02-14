@@ -1,6 +1,10 @@
 /** 
- * A quick wrapper around the existing Cryptsy npm module lib so that I have something to spy on in unit tests.
- * This should also allow for other exchanges to be easily swapped in.
+ * Cryptsy API
+ *
+ * A quick wrapper around the existing Cryptsy npm module lib to generalize the source data.
+ * This should  allow for other exchanges to be easily swapped in.
+ *
+ * https://www.cryptsy.com/pages/api
  */
 
 var _ = require('lodash');
@@ -17,7 +21,7 @@ Cryptsy.prototype.getBalances = function(currencies, cb) {
 };
 
 Cryptsy.prototype.getMarkets = function(currencies, cb) {
-    // todo: consider caching the marketids and then just fetching individual market prices
+    // todo: see if caching the marketids and then just fetching individual market pricesp brings better performance
     var cryptsy = this;
     async.parallel({
         marketdata: function(cb) {
