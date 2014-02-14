@@ -27,11 +27,13 @@ Todo
 * Create threshold of when to skip a trade 
 * Find appropriate value for the above threshold
 * Add option to automatically execute suggested trades
-* Test Cryptsy API wrapper
+* Finish testing Cryptsy API wrapper
 * Test core code
+* add jsbeautify tasks
 * Automate tests
 * Set up live instance to rebalance my account
 * Separate CLI from core lib
 * Support allocation by percentage
 * Support auto-selling balances in non-target currencies
 * Better error for bogus / unsupported currencies
+* Support A->B->C paths even when B is not a requested currency

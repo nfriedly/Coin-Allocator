@@ -1,5 +1,7 @@
 module.exports = function(grunt) {
 
+    var allScripts = ['*.js', 'exchanges/*.js', 'tests/*.js'];
+
     grunt.initConfig({
         jasmine_node: {
             options: {
@@ -14,14 +16,35 @@ module.exports = function(grunt) {
             options: {
                 jshintrc: true
             },
-            all: ['*.js', 'exchanges/*.js', 'tests/*.js']
+            all: allScripts
+        },
+        jsbeautifier: {
+            rewrite: {
+                src: allScripts
+            },
+            verify: {
+                src: allScripts,
+                options: {
+                    mode: "VERIFY_ONLY"
+                }
+            }
+        },
+        watch: {
+            scripts: {
+                files: ['*.js', 'exchanges/*.js', 'tests/*.js'],
+                tasks: ['default'],
+            }
         }
     });
 
     grunt.loadNpmTasks('grunt-jasmine-node');
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-jsbeautifier');
+    grunt.loadNpmTasks('grunt-contrib-watch');
 
-    grunt.registerTask('default', ['jshint', 'jasmine_node']);
+    grunt.registerTask('default', ['jshint', 'jasmine_node', 'jsbeautifier:verify']);
+    grunt.registerTask('beautify', 'jsbeautifier:rewrite');
+
 
 
 
