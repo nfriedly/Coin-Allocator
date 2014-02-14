@@ -22,8 +22,8 @@ if (!publicKey || !privateKey) throw 'CRYPTSY_PUBLIC_KEY and CRYPTSY_PRIVATE_KEY
 
 var marketIds = require('./data/cryptsy-market-ids.json');
 
-var Cryptsy = require('cryptsy');
-var cryptsy = new Cryptsy(publicKey, privateKey);
+var Cryptsy = require('./exchanges/cryptsy');
+var exchange = new Cryptsy(publicKey, privateKey);
 
 var _ = require('lodash');
 var async = require('async');
@@ -31,7 +31,7 @@ var util = require('util');
 
 var d = require('domain').create();
 d.on('error', function(er) {
-  console.error(er);
+  console.error((er && er.stack) || er);
   process.exit(1);
 });
 d.run(function() {
@@ -61,27 +61,24 @@ d.run(function() {
     
     console.log('fetching data...');
     async.auto({
-        marketdatav2: cryptsy.api.bind(cryptsy, 'marketdatav2', null),
-        markets: ['marketdatav2', function(cb, results) { 
-            cb(null, results.marketdatav2.markets);
+        prices: function(cb) {
+            exchange.getPrices(currencies, cb);
+        },
+        balances: function(cb) {
+            exchange.getBalances(currencies, cb);
+        },
+        balancesInPrimary: ['balances', 'prices', function(cb, results) {
+            cb(null, _.mapValues(results.balances, convertTo.bind(null, primaryCurrency, results.prices)));
         }],
         
-        getinfo: cryptsy.api.bind(cryptsy, 'getinfo', null),
-        balances: ['getinfo', function(cb, results) {
-            cb(null, _.pick(results.getinfo.balances_available, currencies));
-        }],
-        balancesInPrimary: ['balances', 'markets', function(cb, results) {
-            cb(null, _.mapValues(results.balances, convertTo.bind(null, primaryCurrency, results.markets)));
-        }],
-        
-        target: ['balances', 'balancesInPrimary', 'marketdatav2', function(cb, results) {
+        target: ['balances', 'balancesInPrimary', function(cb, results) {
             // todo: support %-based targets in addition to even splitting
             var totalInPrimary = _.reduce(results.balancesInPrimary, function(sum, num) {
               return sum + num;
             });
             var targetInPrimary = totalInPrimary / Object.keys(results.balances).length;
             var targetBalances = _.mapValues(results.balancesInPrimary, function(amount, currency) {
-               return targetInPrimary * getRatio(currency, results.markets, primaryCurrency); 
+               return targetInPrimary * getRatio(currency, results.prices, primaryCurrency); 
             });
             cb(null, targetBalances);
         }]
@@ -90,6 +87,5 @@ d.run(function() {
         console.log("Converted to BTC:", results.balancesInPrimary);
         console.log("Target after rebalancing:", results.target);
     }));
-    
 });
 

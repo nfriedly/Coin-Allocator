@@ -18,3 +18,20 @@ Common Issues
 -------------
 
 Cryptsy's API frequently dies. In that case, you'll see an error message, usually with something about 'Error parsing JSON' and some HTML telling you about a 'Bad Gateway'. If that happens, just wait a minute or two and try again.
+
+Todo
+----
+
+* Suggest trades to-and-from primary currency to rebalance account
+* Optimize trades to skip primary currency when appropriate (goal is lower total trade volume)
+* Create threshold of when to skip a trade 
+* Find appropriate value for the above threshold
+* Add option to automatically execute suggested trades
+* Test Cryptsy API wrapper
+* Test core code
+* Automate tests
+* Set up live instance to rebalance my account
+* Separate CLI from core lib
+* Support allocation by percentage
+* Support auto-selling balances in non-target currencies
+* Better error for bogus / unsupported currencies
