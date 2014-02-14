@@ -11,7 +11,7 @@ Cryptsy.prototype.getBalances = function(currencies, cb) {
         if (err) return cb(err);
         cb(null, _.pick(info.balances_available, currencies));
     });
-}
+};
 
 Cryptsy.prototype.getPrices = function(currencies, cb) {
     this.api('marketdatav2', null, function(err, results) {
@@ -20,6 +20,6 @@ Cryptsy.prototype.getPrices = function(currencies, cb) {
         // todo: convert to a 2-d map of CurrencyA > CurrencyB > price
         cb(null, results.markets);
     });
-}
+};
 
 module.exports = Cryptsy;
