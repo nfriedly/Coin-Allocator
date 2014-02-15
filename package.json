@@ -7,6 +7,10 @@
     "test": "grunt",
     "get-cryptsy-market-ids": "scripts/get-cryptsy-market-ids.js 1 > data/cryptsy-market-ids.json && cat data/cryptsy-market-ids.json"
   },
+  "bin": {
+    "coin-allocator": "cli.js"
+  },
+  "preferGlobal": "true",
   "repository": {
     "type": "git",
     "url": "https://github.com/nfriedly/coin-allocator"

@@ -1,4 +1,22 @@
+#!/usr/bin/env node
+
+/**
+ * CLI Interface for Coin Allocator
+ *
+ * Todo:
+ *  - Build proper CLI with optimist or the like
+ *  - add --help command
+ *  - require allocation targets from command line
+ *  - require primary currency from command line
+ *  - accept keys from cli in addition to env
+ *  - add --no-execute option to suggest trades and exit
+ *  - ask before making trades
+ *  - add --yes option automatically make the trades without asking
+ *  - (eventually) add --exchange param
+ */
+
 var _ = require('lodash');
+
 
 // configuration
 var publicKey = process.env.CRYPTSY_PUBLIC_KEY;
