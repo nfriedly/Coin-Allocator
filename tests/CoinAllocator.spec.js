@@ -3,17 +3,12 @@ describe('CoinAllocator', function() {
     var CoinAllocator = require('../CoinAllocator.js');
     var currencies = ['BTC', 'LTC', 'DOGE'];
     var primaryCurrency = 'BTC';
+    var threshold = 1;
     var coinAllocator;
     var markets;
     var balances;
 
-    beforeEach(function() {
-        coinAllocator = new CoinAllocator({
-            currencies: currencies,
-            primaryCurrency: primaryCurrency,
-            publicKey: "PUBLIC_KEY",
-            privateKey: "PRIVATE_KEY "
-        });
+    function setCurrenciesBtcDoge() {
         markets = {
             BTC: {
                 DOGE: {
@@ -29,9 +24,42 @@ describe('CoinAllocator', function() {
             }
         };
         balances = {
-            BTC: 2,
-            DOGE: 3
+            BTC: 1,
+            DOGE: 100
         };
+    }
+
+    function setCurrenciesBtcLtcDoge() {
+        markets.LTC = {
+            BTC: {
+                ratio: 0.1,
+                fee: 0.003
+            },
+            DOGE: {
+                ratio: 10,
+                fee: 0.002
+            }
+        };
+        markets.BTC.LTC = {
+            ratio: 10,
+            fee: 0.002
+        };
+        markets.DOGE.LTC = {
+            ratio: 0.1,
+            fee: 0.003
+        };
+        balances.LTC = 10;
+    }
+
+    beforeEach(function() {
+        coinAllocator = new CoinAllocator({
+            currencies: currencies,
+            primaryCurrency: primaryCurrency,
+            publicKey: "PUBLIC_KEY",
+            privateKey: "PRIVATE_KEY",
+            threshold: threshold
+        });
+        setCurrenciesBtcDoge();
     });
 
     describe('getRatio', function() {
@@ -43,6 +71,10 @@ describe('CoinAllocator', function() {
 
     describe('getBalancesInPrimary', function() {
         it('should convert balances to their primary currency', function() {
+            balances = {
+                BTC: 2,
+                DOGE: 3
+            };
             expect(coinAllocator.getBalancesInPrimary('BTC', markets, balances)).toEqual({
                 BTC: 2,
                 DOGE: 0.03
@@ -106,24 +138,7 @@ describe('CoinAllocator', function() {
         });
 
         it('should suggest sensible trades to and from the primary currency', function() {
-            markets.LTC = {
-                BTC: {
-                    ratio: 0.1,
-                    fee: 0.003
-                },
-                DOGE: {
-                    ratio: 10,
-                    fee: 0.002
-                }
-            };
-            markets.BTC.LTC = {
-                ratio: 10,
-                fee: 0.002
-            };
-            markets.DOGE.LTC = {
-                ratio: 0.1,
-                fee: 0.003
-            };
+            setCurrenciesBtcLtcDoge();
             balances = {
                 BTC: 0,
                 LTC: 30,
@@ -144,6 +159,42 @@ describe('CoinAllocator', function() {
                 from: 'BTC',
                 to: 'DOGE'
             }];
+            expect(actual).toEqual(expected);
+
+        });
+    });
+
+    xdescribe('optimizeTrades', function() {
+        it('should reduce the volume of transfers', function() {
+            setCurrenciesBtcLtcDoge();
+
+            var targetBalances = {
+                BTC: 1,
+                LTC: 10,
+                DOGE: 100
+            };
+            var trades = [{
+                amount: 20,
+                from: 'LTC',
+                to: 'BTC'
+            }, {
+                amount: 1,
+                from: 'BTC',
+                to: 'DOGE'
+            }];
+
+            var actual = coinAllocator.optimizeTrades(markets, balances, targetBalances, threshold, trades);
+
+            var expected = [{
+                amount: 10,
+                from: 'LTC',
+                to: 'BTC'
+            }, {
+                amount: 10,
+                from: 'LTC',
+                to: 'DOGE'
+            }];
+
             expect(actual).toEqual(expected);
 
         });

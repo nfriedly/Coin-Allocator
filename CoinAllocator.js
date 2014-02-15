@@ -94,6 +94,10 @@ CoinAllocator.prototype.getStatus = function(cb) {
     });
 };
 
+CoinAllocator.prototype.optimizeTrades = function(markets, balances, targetBalances, threshold, trades) {
+    return trades;
+};
+
 CoinAllocator.prototype.getSuggestedTrades = function(status) {
     var baselineSuggestedtrades = this.getBaselineSuggestedTrades(this.primaryCurrency, status.markets, status.balances, status.targetBalances);
     // todo: optimize these trades

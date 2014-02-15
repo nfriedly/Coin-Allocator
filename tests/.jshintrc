@@ -8,6 +8,8 @@
         "beforeEach": false,
         "it": false,
         "spyOn": false,
-        "expect": false
+        "expect": false,
+        "xdescribe": false,
+        "xit": false
     }
 }
