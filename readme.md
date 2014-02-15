@@ -5,7 +5,7 @@ Coin Allocator
 
 Taking the lessons from [The Intelligent Asset Allocator](http://www.amazon.com/gp/product/0071362363/ref=as_li_ss_il?ie=UTF8&camp=1789&creative=390957&creativeASIN=0071362363&linkCode=as2&tag=nfriedly-20) and applying them to BitCoin and friends via [Cryptsy](https://www.cryptsy.com/users/register?refid=154285).
 
-Currently just reviews your balances and suggests a new allocation and a nieve set of trades to get there. I plan optimizing the trades to reduce the fees and take advantage of any arbitrage opportunities, and then give the option to automatically rebalance using the optimized trades.
+Currently just reviews your balances and suggests a new allocation and a naive set of trades to get there. I plan optimizing the trades to reduce the fees and take advantage of any arbitrage opportunities, and then give the option to automatically rebalance using the optimized trades.
 
 Setup
 -----
