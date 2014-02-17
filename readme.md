@@ -34,3 +34,5 @@ Todo
 * Better error for bogus / unsupported currencies
 * Support A->B->C paths even when B is not a requested currency
 * Add support for BTC-e (and other exchanges?)
+* Calculate Amount lost to fees with a given trade set
+* Calculate total gained over time (perhaps belongs outside of this library?)

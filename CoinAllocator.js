@@ -49,31 +49,6 @@ CoinAllocator.prototype.getTargetBalances = function(primaryCurrency, markets, b
     return targetBalances;
 };
 
-CoinAllocator.prototype.getBaselineSuggestedTrades = function(primaryCurrency, markets, balances, targetBalances) {
-    var trades = [];
-    _.each(targetBalances, function(amount, currency) {
-        if (currency == primaryCurrency) return;
-        var diff = balances[currency] - amount;
-        if (diff > 0) {
-            // shift because we want the SELLs to go first so that we don't try to spend more primary currency than we have
-            trades.unshift({
-                amount: diff,
-                from: currency,
-                to: primaryCurrency
-            });
-        }
-        if (diff < 0) {
-            // push because we want the BUYS to come second after we've already beefed up our primary currency
-            trades.push({
-                amount: Math.abs(diff) * this.getRatio(primaryCurrency, markets, currency),
-                from: primaryCurrency,
-                to: currency
-            });
-        }
-    }, this);
-    return trades;
-};
-
 CoinAllocator.prototype.getStatus = function(cb) {
     var self = this;
     async.parallel({
@@ -94,8 +69,175 @@ CoinAllocator.prototype.getStatus = function(cb) {
     });
 };
 
-CoinAllocator.prototype.optimizeTrades = function(markets, balances, targetBalances, threshold, trades) {
-    return trades;
+/**
+ * Trade object, immutable.
+ *
+ * Example trade - convert $5 USD to BTC:
+ * new Trade({from: 'USD', amount: 5, to: 'BTC'});
+ */
+function Trade(params) {
+    var from = params.from,
+        amount = params.amount,
+        to = params.to;
+    this.getFrom = function() {
+        return from;
+    };
+    this.getAmount = function() {
+        return amount;
+    };
+    this.getTo = function() {
+        return to;
+    };
+}
+/*  Todo: see if I can find a better place to put these
+Trade.prototype.getToAmountWithoutFees(markets) {
+    return this.getAmount() * markets[this.getFrom()][this.getTo()].ratio;
+};
+Trade.prototype.getToAmountWithFees = function() {
+    var toAmount = this.getToAmountWithoutFees();
+    return toAmount - (toAmount * markets[this.getFrom()][this.getTo()].fee);
+};
+*/
+Trade.prototype.toJSON = function() {
+    return {
+        from: this.getFrom(),
+        amount: this.getAmount(),
+        to: this.getTo()
+    };
+};
+Trade.prototype.toString = function() {
+    return "Trade<" + JSON.stringify(this.toJSON()) + ">";
+};
+
+/**
+ * An immutable list of trades.
+ *
+ * All elements must be Trade objects
+ *
+ */
+function TradeSet(trades) {
+    if (!_.every(trades, function(trade) {
+        return trade instanceof Trade;
+    })) {
+        throw new Error('All elements passed to a TradeSet must be Trade objects');
+    }
+    trades = trades.slice(); // prevent changes to the source array from affecting the internal one
+    this.getTrades = function() {
+        return trades.slice(); // prevent changes to the given array from affecting the internal one
+    };
+}
+
+TradeSet.prototype.toJSON = function() {
+    return _.invoke(this.getTrades(), Trade.prototype.toJSON);
+};
+TradeSet.prototype.toString = function() {
+    return "TradeSet<" + JSON.stringify(this.toJSON()) + ">";
+};
+
+
+CoinAllocator.prototype.getBaselineSuggestedTrades = function(primaryCurrency, markets, balances, targetBalances) {
+    var trades = [];
+    _.each(targetBalances, function(amount, currency) {
+        if (currency == primaryCurrency) return;
+        var diff = balances[currency] - amount;
+        if (diff > 0) {
+            // shift because we want the SELLs to go first so that we don't try to spend more primary currency than we have
+            trades.unshift(new Trade({
+                from: currency,
+                amount: diff,
+                to: primaryCurrency
+            }));
+        }
+        if (diff < 0) {
+            // push because we want the BUYS to come second after we've already beefed up our primary currency
+            trades.push(new Trade({
+                from: primaryCurrency,
+                amount: Math.abs(diff) * this.getRatio(primaryCurrency, markets, currency),
+                to: currency
+            }));
+        }
+    }, this);
+    return new TradeSet(trades);
+};
+
+/**
+ * Take a given TradeSet and look for optimizations to reduce fees.
+ * Potential future enhancement includes looking for arbitrage opportunities
+ *
+ * Recursively calls itself until it can no longer find any improvements to make, then returns the resulting trade set.
+ */
+CoinAllocator.prototype.optimizeTrades = function(primaryCurrency, markets, balances, targetBalances, threshold, tradeSet) {
+    console.log('\n\nstart', tradeSet.toString()); // gaah! endless loop!
+    var trades = tradeSet.getTrades();
+    if (trades.length > 10) throw 'die!';
+    var sells = [];
+    var buys = [];
+    trades.forEach(function(trade) {
+        if (trade.getFrom() == primaryCurrency) {
+            buys.push(trade);
+        } else if (trade.getTo() == primaryCurrency) {
+            sells.push(trade);
+        }
+        // else it's already been optimized and we're not going to look at it.
+    });
+
+    // b-a because we want to work with larger amounts first
+    buys.sort(function(a, b) {
+        return b.amount - a.amount;
+    });
+    sells.sort(function(a, b) {
+        var aAmountInPrimary = a.getAmount() * markets[a.getFrom()][primaryCurrency].ratio;
+        var bAmountInPrimary = b.getAmount() * markets[b.getFrom()][primaryCurrency].ratio;
+        return bAmountInPrimary - aAmountInPrimary;
+    });
+
+    var self = this;
+    var changed = sells.some(function(sell) {
+        console.log('sells', sell);
+        return buys.some(function(buy) {
+            console.log('buys', buy);
+            var market = markets[sell.getFrom()][buy.getTo()];
+            if (market) {
+                trades = _.pull(trades, buy, sell);
+                var buyAmountInSellCurrency = buy.getAmount() * market.ratio;
+                var newTransfer;
+                if (sell.getAmount() == buyAmountInSellCurrency) {
+                    // equal-sized buy and sell: replace both with a new direct order and cut the transaction fees in half
+                    trades.push(new Trade({
+                        from: sell.getFrom(),
+                        to: buy.getTo(),
+                        amount: sell.getAmount()
+                    }));
+                } else if (sell.getAmount() > buyAmountInSellCurrency) {
+                    // large sell, small buy. Buy should come out of the sell directly instead of going through the primary currency and paying two transaction fees.
+                    // todo: rename these to keep buy/sell on the original one and "transfer" on the new one
+                    newTransfer = buy.toJSON();
+                    var shrunkSell = sell.toJSON();
+                    console.log('before:', shrunkSell, newTransfer);
+                    shrunkSell.amount = sell.getAmount() - buyAmountInSellCurrency;
+                    newTransfer.from = sell.getFrom();
+                    newTransfer.amount = buyAmountInSellCurrency;
+                    console.log('before:', shrunkSell, newTransfer);
+                    trades.push(new Trade(shrunkSell), new Trade(newTransfer));
+                } else {
+                    // small sell, large buy. Sell should go directly towards the buy, bypassing the primary currency and saving some funds.
+                    var newBuy = buy.toJSON();
+                    newTransfer = sell.toJSON();
+                    newTransfer.to = buy.getTo();
+                    var sellAmountInBuyCurrency = sell.getAmount() * self.getRatio(buy.getFrom(), markets, sell.getFrom());
+                    newBuy.amount = buy.getAmount() - sellAmountInBuyCurrency;
+                    trades.push(new Trade(newTransfer), new Trade(newBuy));
+                }
+                return true;
+            }
+            return false;
+        });
+    });
+
+    console.log('end', changed);
+
+    // If we found any optimizations, create a new TradeSet and look for more. Otherwise return the current TradeSet
+    return changed ? this.optimizeTrades(primaryCurrency, markets, balances, targetBalances, threshold, new TradeSet(trades)) : tradeSet;
 };
 
 CoinAllocator.prototype.getSuggestedTrades = function(status) {
@@ -111,3 +253,6 @@ CoinAllocator.prototype.executeSuggestedTrades = function(cb) {
 };
 
 module.exports = CoinAllocator;
+module.exports.CoinAllocator = CoinAllocator;
+module.exports.Trade = Trade;
+module.exports.TradeSet = TradeSet;
