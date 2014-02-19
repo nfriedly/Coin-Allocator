@@ -10,6 +10,8 @@
         "spyOn": false,
         "expect": false,
         "xdescribe": false,
-        "xit": false
+        "xit": false,
+        "runs": false,
+        "waitsFor": false
     }
 }

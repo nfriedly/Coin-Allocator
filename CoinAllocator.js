@@ -257,10 +257,12 @@ CoinAllocator.prototype.getSuggestedTrades = function(status) {
     return this.removeTradesBelowThreshold(optimizedTrades, status.targetBalances, this.threshold);
 };
 
-CoinAllocator.prototype.executeSuggestedTrades = function(cb) {
-    this.getSuggestedTrades(function(err, trades) {
-        cb(null, trades);
-    });
+CoinAllocator.prototype.executeTrades = function(trades, cb) {
+    return this.exchange.executeTrades(trades, cb);
+};
+
+CoinAllocator.prototype.cancelAllOrders = function(cb) {
+    return this.exchange.cancelAllOrders(cb);
 };
 
 module.exports = CoinAllocator;

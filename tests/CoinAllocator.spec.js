@@ -153,11 +153,11 @@ describe('CoinAllocator', function() {
             };
             var actual = coinAllocator.getBaselineSuggestedTrades(primaryCurrency, markets, balances, targetBalances);
             var expected = [{
-                amount: 20,
+                amount: '20.00000000',
                 from: 'LTC',
                 to: 'BTC'
             }, {
-                amount: 1,
+                amount: '1.00000000',
                 from: 'BTC',
                 to: 'DOGE'
             }];
@@ -193,7 +193,7 @@ describe('CoinAllocator', function() {
             var actual = coinAllocator.optimizeTrades(primaryCurrency, markets, balances, targetBalances, threshold, trades);
 
             var expected = [{
-                amount: 10,
+                amount: '10.00000000',
                 from: 'LTC',
                 to: 'DOGE'
             }];
@@ -224,11 +224,11 @@ describe('CoinAllocator', function() {
             var actual = coinAllocator.optimizeTrades(primaryCurrency, markets, balances, targetBalances, threshold, trades);
 
             var expected = [{
-                amount: 10,
+                amount: '10.00000000',
                 from: 'LTC',
                 to: 'BTC'
             }, {
-                amount: 10,
+                amount: '10.00000000',
                 from: 'LTC',
                 to: 'DOGE'
             }];
@@ -259,11 +259,11 @@ describe('CoinAllocator', function() {
             var actual = coinAllocator.optimizeTrades(primaryCurrency, markets, balances, targetBalances, threshold, trades);
 
             var expected = [{
-                amount: 1,
+                amount: '1.00000000',
                 from: 'LTC',
                 to: 'DOGE'
             }, {
-                amount: 0.9,
+                amount: '0.90000000',
                 from: 'BTC',
                 to: 'DOGE'
             }];
@@ -296,11 +296,11 @@ describe('CoinAllocator', function() {
             var actual = coinAllocator.optimizeTrades(primaryCurrency, markets, balances, targetBalances, threshold, trades);
 
             var expected = [{
-                amount: 1,
+                amount: '1.00000000',
                 from: 'LTC',
                 to: 'BTC'
             }, {
-                amount: 1,
+                amount: '1.00000000',
                 from: 'BTC',
                 to: 'DOGE'
             }];
@@ -395,11 +395,11 @@ describe('CoinAllocator', function() {
 
             var expected = [{
                 from: 'A',
-                amount: 1,
+                amount: '1.00000000',
                 to: 'B'
             }, {
                 from: 'C',
-                amount: 1,
+                amount: '1.00000000',
                 to: 'D'
             }];
 
