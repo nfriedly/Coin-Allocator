@@ -17,6 +17,7 @@ function CoinAllocator(options) {
     this.primaryCurrency = options.primaryCurrency;
     this.exchange = new Cryptsy(options.publicKey, options.privateKey);
     this.currencies = options.currencies;
+    this.threshold = options.threshold / 100 || 0.01;
 }
 
 CoinAllocator.prototype.getRatio = function(targetCurrency, markets, currency) {
@@ -77,7 +78,8 @@ CoinAllocator.prototype.getStatus = function(cb) {
  */
 function Trade(params) {
     var from = params.from,
-        amount = params.amount,
+        // bitcoin and friends can only be divided down to 8 decimal places. toFixed(8) rounds the amount if necessary and turns it into a string so that it doesn't get rendered as scientific notation
+        amount = (typeof params.amount == 'string') ? params.amount : params.amount.toFixed(8),
         to = params.to;
     this.getFrom = function() {
         return from;
@@ -167,7 +169,6 @@ CoinAllocator.prototype.getBaselineSuggestedTrades = function(primaryCurrency, m
  * Recursively calls itself until it can no longer find any improvements to make, then returns the resulting trade set.
  */
 CoinAllocator.prototype.optimizeTrades = function(primaryCurrency, markets, balances, targetBalances, threshold, tradeSet) {
-    console.log('\n\nstart', tradeSet.toString()); // gaah! endless loop!
     var trades = tradeSet.getTrades();
     if (trades.length > 10) throw 'die!';
     var sells = [];
@@ -193,9 +194,7 @@ CoinAllocator.prototype.optimizeTrades = function(primaryCurrency, markets, bala
 
     var self = this;
     var changed = sells.some(function(sell) {
-        console.log('sells', sell);
         return buys.some(function(buy) {
-            console.log('buys', buy);
             var market = markets[sell.getFrom()][buy.getTo()];
             if (market) {
                 trades = _.pull(trades, buy, sell);
@@ -213,11 +212,9 @@ CoinAllocator.prototype.optimizeTrades = function(primaryCurrency, markets, bala
                     // todo: rename these to keep buy/sell on the original one and "transfer" on the new one
                     newTransfer = buy.toJSON();
                     var shrunkSell = sell.toJSON();
-                    console.log('before:', shrunkSell, newTransfer);
                     shrunkSell.amount = sell.getAmount() - buyAmountInSellCurrency;
                     newTransfer.from = sell.getFrom();
                     newTransfer.amount = buyAmountInSellCurrency;
-                    console.log('before:', shrunkSell, newTransfer);
                     trades.push(new Trade(shrunkSell), new Trade(newTransfer));
                 } else {
                     // small sell, large buy. Sell should go directly towards the buy, bypassing the primary currency and saving some funds.
@@ -234,16 +231,30 @@ CoinAllocator.prototype.optimizeTrades = function(primaryCurrency, markets, bala
         });
     });
 
-    console.log('end', changed);
-
     // If we found any optimizations, create a new TradeSet and look for more. Otherwise return the current TradeSet
     return changed ? this.optimizeTrades(primaryCurrency, markets, balances, targetBalances, threshold, new TradeSet(trades)) : tradeSet;
 };
 
+var MINIMUM_BTC_SIZE = parseFloat('1.0e-8');
+
+CoinAllocator.prototype.removeTradesBelowThreshold = function(tradeSet, targetBalances, threshold) {
+    var trades = tradeSet.getTrades();
+
+    var filteredTrades = _.filter(trades, function(trade) {
+        var amount = parseFloat(trade.getAmount());
+        if (amount < MINIMUM_BTC_SIZE) {
+            return false;
+        }
+        return (amount / targetBalances[trade.getTo()]) > threshold;
+    });
+
+    return new TradeSet(filteredTrades);
+};
+
 CoinAllocator.prototype.getSuggestedTrades = function(status) {
     var baselineSuggestedtrades = this.getBaselineSuggestedTrades(this.primaryCurrency, status.markets, status.balances, status.targetBalances);
-    // todo: optimize these trades
-    return baselineSuggestedtrades;
+    var optimizedTrades = this.optimizeTrades(this.primaryCurrency, status.markets, status.balances, status.targetBalances, this.threshold, baselineSuggestedtrades);
+    return this.removeTradesBelowThreshold(optimizedTrades, status.targetBalances, this.threshold);
 };
 
 CoinAllocator.prototype.executeSuggestedTrades = function(cb) {
