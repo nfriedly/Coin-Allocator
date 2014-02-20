@@ -49,18 +49,18 @@ Cryptsy.prototype.getMarkets = function(currencies, cb) {
         var markets = {};
         _.each(results.markets, function(market) {
             // todo: see if turning currencies into a map makes any appreciable performance difference here
-            if (_.contains(currencies, market.primarycode) && _.contains(currencies, market.secondarycode)) {
-                markets[market.primarycode] = markets[market.primarycode] || {};
-                markets[market.primarycode][market.secondarycode] = {
+            if (_.contains(currencies, market.primary_currency_code) && _.contains(currencies, market.secondary_currency_code)) {
+                markets[market.primary_currency_code] = markets[market.primary_currency_code] || {};
+                markets[market.primary_currency_code][market.secondary_currency_code] = {
                     // for example, in the DOGE/BTC market, primary = DOGE, secondary = BTC, lasttradeprice = 0.00000262 
                     // this means that 1 DOGE buys you 0.00000262 BTC
-                    ratio: +market.lasttradeprice,
+                    ratio: +market.last_trade,
                     fee: +results.sellFee.fee
                 };
 
-                markets[market.secondarycode] = markets[market.secondarycode] || {};
-                markets[market.secondarycode][market.primarycode] = {
-                    ratio: 1 / market.lasttradeprice,
+                markets[market.secondary_currency_code] = markets[market.secondary_currency_code] || {};
+                markets[market.secondary_currency_code][market.primary_currency_code] = {
+                    ratio: 1 / market.last_trade,
                     fee: +results.buyFee.fee
                 };
             }
@@ -153,8 +153,8 @@ Cryptsy.prototype._getFees = function(order, cb) {
 Cryptsy.prototype._getMarkets = function(cb) {
     var cryptsy = this;
     this._getMarkets = async.memoize(function(cb) {
-        cryptsy.api('marketdatav2', null, function(err, marketdata) {
-            cb(err, marketdata && marketdata.markets);
+        cryptsy.api('getmarkets', null, function(err, markets) {
+            cb(err, markets);
         });
     });
     this._getMarkets(cb);
@@ -163,7 +163,10 @@ Cryptsy.prototype._getMarkets = function(cb) {
 Cryptsy.prototype.convertTradeToOrder = function(markets, trade) {
     var to = trade.getTo();
     var from = trade.getFrom();
-    var market = markets[util.format("%s/%s", to, from)];
+    var market = _.findWhere(markets, {
+        label: util.format("%s/%s", to, from)
+    });
+    //console.log(util.format("%s/%s", to, from), market);
     if (market) {
         return {
             marketid: market.marketid,
@@ -173,7 +176,11 @@ Cryptsy.prototype.convertTradeToOrder = function(markets, trade) {
             price: market.lasttradeprice
         };
     } else {
-        market = markets[util.format("%s/%s", from, to)];
+        market = _.findWhere(markets, {
+            label: util.format("%s/%s", from, to)
+        });
+
+        //console.log(util.format("%s/%s", from, to), market);
         if (!market) {
             throw new Error("Impossible trade, no market available: " + trade.toString());
         }
