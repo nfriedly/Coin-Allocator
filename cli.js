@@ -62,11 +62,16 @@ ca.getStatus(function(err, status) {
     console.log("Current balances:", status.balances);
     console.log("Target after rebalancing:", status.targetBalances);
     var suggestedTrades = ca.getSuggestedTrades(status);
+    if (!suggestedTrades.getTrades().length) {
+        console.log('\nNo trades recommended at this time.\n');
+        process.exit();
+    }
     console.log("Suggested trades:\n", suggestedTrades.toString());
     var ordersStarted = false;
     repl.start({
         prompt: "Execute these trades? (yes/no): ",
         eval: function(cmd, context, filename, callback) {
+            // todo: figure out how to kill the prompt and prevent/ignore additional user input after the first yes/no
             cmd = cmd.replace(/[^a-z]/ig, '').toLowerCase();
             if (cmd == 'yes' || cmd == '(yes)') { // not sure why node wraps parenthesis around the command...
                 ordersStarted = true;
