@@ -15,7 +15,7 @@
  *  - (eventually) add --exchange param
  */
 
-var repl = require('repl');
+var readline = require('readline');
 var util = require('util');
 var _ = require('lodash');
 
@@ -49,16 +49,6 @@ ca.getStatus(function(err, status) {
 
     }
 
-    function cancelAllOrders() {
-        console.warn('Canceling all outstanding orders...');
-        ca.cancelAllOrders(function(err, cancelations) {
-            if (err) {
-                console.error('Error canceling orders: ', err);
-                return process.exit(4);
-            }
-            console.log('Orders canceled: ', cancelations);
-        });
-    }
     console.log("Current balances:", status.balances);
     console.log("Target after rebalancing:", status.targetBalances);
     var suggestedTrades = ca.getSuggestedTrades(status);
@@ -67,46 +57,70 @@ ca.getStatus(function(err, status) {
         process.exit();
     }
     console.log("Suggested trades:\n", suggestedTrades.toString());
-    var ordersStarted = false;
-    repl.start({
-        prompt: "Execute these trades? (yes/no): ",
-        eval: function(cmd, context, filename, callback) {
-            // todo: figure out how to kill the prompt and prevent/ignore additional user input after the first yes/no
-            cmd = cmd.replace(/[^a-z]/ig, '').toLowerCase();
-            if (cmd == 'yes' || cmd == '(yes)') { // not sure why node wraps parenthesis around the command...
-                ordersStarted = true;
-                console.log('Executing, press control-c to cancel and kill any outstanding orders');
-                ca.executeTrades(suggestedTrades)
-                    .on('executing', function(trade, order, orderId) {
-                        console.log('Executing trade:\n Trade: %s\n order: %s\n Order ID: %s', trade.toString(), order, orderId);
-                        process.stdout.write('...');
-                    })
-                    .on('executed', function(trade, orderId) {
-                        process.stdout.write('Done! Order ID: ', orderId);
-                    })
-                    .on('orderProgress', function(completed, total) {
-                        process.stdout.clearLine();
-                        process.stdout.write(util.format('%s/%s (%s%)', completed, total, Math.round(completed / total * 100)));
-                    })
-                    .on('error', function(err) {
-                        console.error('Error executing trades:');
-                        console.error(err);
-                        cancelAllOrders();
-                        process.exit(3);
-                    })
-                    .on('done', function() {
-                        console.log('All trades executed!');
-                        process.exit();
-                    });
-            } else if (cmd == 'no' || cmd == '(no)') {
-                process.exit();
-            } else {
-                console.error('Please type "yes" or "no", or run coin-allocator with the -y argument (%s)', cmd);
-                callback();
+
+    var ordersOpen = false;
+
+    function cancelAllOrders(cb) {
+        console.warn('Canceling all outstanding orders...');
+        ca.cancelAllOrders(function(err, cancelations) {
+            if (err) {
+                console.error('Error canceling orders: ', err);
+                return process.exit(4);
             }
-        }
-    }).on('exit', function() {
-        if (ordersStarted) cancelAllOrders();
-        process.exit();
+            console.log('Orders canceled: ', cancelations);
+            if (cb) {
+                cb();
+            }
+        });
+        ordersOpen = false;
+    }
+
+    var rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
     });
+
+    function handleResponse(response) {
+        // todo: figure out how to kill the prompt and prevent/ignore additional user input after the first yes/no
+        response = response.toLowerCase();
+        if (response == 'yes') { // not sure why node wraps parenthesis around the command...
+            ordersOpen = true;
+            var error = false;
+            console.log('Executing, press control-c to cancel and kill any outstanding orders');
+            ca.executeTrades(suggestedTrades)
+                .on('executing', function(trade, order, orderId) {
+                    console.log('Executing trade:\n Trade: %s\n order: %s\n Order ID: %s', trade.toString(), order, orderId);
+                    process.stdout.write('...');
+                })
+                .on('executed', function(trade, orderId) {
+                    process.stdout.write('Done! Order ID: ', orderId);
+                })
+                .on('orderProgress', function(completed, total) {
+                    process.stdout.clearLine();
+                    process.stdout.write(util.format('%s/%s (%s%)', completed, total, Math.round(completed / total * 100)));
+                })
+                .on('error', function(err) {
+                    console.error('Error executing trades:');
+                    console.error(err);
+                    cancelAllOrders(function() {
+                        process.exit(3);
+                    });
+                })
+                .on('done', function() {
+                    ordersOpen = false;
+                    if (!error) console.log('All trades executed!');
+                    process.exit();
+                });
+        } else if (response == 'no') {
+            process.exit();
+        } else {
+            rl.question('Please type "yes" or "no": ', handleResponse);
+        }
+    }
+    rl.on('close', function() {
+        if (ordersOpen) cancelAllOrders(function() {
+            process.exit();
+        });
+    });
+    rl.question('Execute these trades? (yes/no): ', handleResponse);
 });

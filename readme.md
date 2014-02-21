@@ -26,9 +26,11 @@ Cryptsy's API frequently dies. In that case, you'll see an error message, usuall
 Todo
 ----
 
-* Clean up CLI and add `npm install -g` support
+* Fix bug with trade amount getting set to 0! Add a test!
+* Clean up CLI - try out https://github.com/chevex/yargs
 * Make the exchange provide subclasses of the Trade & TradeSet objects, make them perform validation at creation time
-* Make Trade Objects if amount is below minimum exchange amount
+* Figure out minimum exchange amounts (scrape? tiny fake transactions?)
+* Make Trade Objects throw on creation if amount is below minimum exchange amount
 * Set up live instance to rebalance my account
 * Support allocation by percentage
 * Support 0% to auto-sell
