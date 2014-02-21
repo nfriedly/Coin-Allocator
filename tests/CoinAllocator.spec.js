@@ -405,5 +405,58 @@ describe('CoinAllocator', function() {
 
             expect(actual.toJSON()).toEqual(expected);
         });
+
+        it('should work on real-world data', function() {
+            setCurrenciesBtcLtcDoge();
+
+            markets.LTC.BTC.ratio = 0.02549999;
+            markets.BTC.LTC.ratio = 1 / markets.LTC.BTC.ratio;
+
+            markets.DOGE.BTC.ratio = 0.00000210;
+            markets.BTC.DOGE.ratio = 1 / markets.DOGE.BTC.ratio;
+
+            markets.DOGE.LTC.ratio = 0.00008338;
+            markets.LTC.DOGE.ratio = 1 / markets.DOGE.LTC.ratio;
+
+            balances = {
+                BTC: 0.02074746,
+                LTC: 0.38729028,
+                DOGE: 8993.46645284
+            };
+            var targetBalances = {
+                BTC: 0.0165032126060204,
+                LTC: 0.6471850618772949,
+                DOGE: 7858.672669533525
+            };
+
+            var trades = new TradeSet([
+                new Trade({
+                    "from": "DOGE",
+                    "amount": "1134.79378331",
+                    "to": "BTC"
+                }),
+                new Trade({
+                    "from": "BTC",
+                    "amount": "0.00662731",
+                    "to": "LTC"
+                })
+            ]);
+
+            var actual = coinAllocator.optimizeTrades(primaryCurrency, markets, balances, targetBalances, threshold, trades);
+
+
+            var expected = [{
+                "from": "DOGE",
+                "amount": "1134.79378331",
+                "to": "LTC"
+            }, {
+                "from": "BTC",
+                "amount": "0.00424424",
+                "to": "LTC"
+            }];
+
+            expect(actual.toJSON()).toEqual(expected);
+
+        });
     });
 });

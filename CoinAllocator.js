@@ -198,7 +198,7 @@ CoinAllocator.prototype.optimizeTrades = function(primaryCurrency, markets, bala
             var market = markets[sell.getFrom()][buy.getTo()];
             if (market) {
                 trades = _.pull(trades, buy, sell);
-                var buyAmountInSellCurrency = buy.getAmount() * market.ratio;
+                var buyAmountInSellCurrency = buy.getAmount() * self.getRatio(sell.getFrom(), markets, buy.getFrom());
                 var newTransfer;
                 if (sell.getAmount() == buyAmountInSellCurrency) {
                     // equal-sized buy and sell: replace both with a new direct order and cut the transaction fees in half
@@ -242,6 +242,7 @@ CoinAllocator.prototype.removeTradesBelowThreshold = function(tradeSet, targetBa
 
     var filteredTrades = _.filter(trades, function(trade) {
         var amount = parseFloat(trade.getAmount());
+        // todo: find market minimum trade amounts for each currency and use that instead
         if (amount < MINIMUM_BTC_SIZE) {
             return false;
         }
