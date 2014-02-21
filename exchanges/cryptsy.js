@@ -77,7 +77,7 @@ Cryptsy.prototype.executeTrades = function(tradeSet) {
         async.eachSeries(tradeSet.getTrades(), function(trade, cb) {
                 var tradeProgress = cryptsy.executeTrade(markets, trade);
                 // bubble these events
-                ['executing', 'orderProgress', 'executed', 'error'].forEach(function(event) {
+                ['executing', 'orderProgress', 'executed'].forEach(function(event) {
                     tradeProgress.on(event, tradeSetProgress.emit.bind(tradeSetProgress, event));
                 });
                 tradeProgress.on('executed', cb.bind(null, null));
@@ -132,7 +132,7 @@ Cryptsy.prototype.getOrder = function(orderId, cb) {
 };
 
 Cryptsy.prototype.cancelAllOrders = function(cb) {
-    this.api('cancelallorders', cb);
+    this.api('cancelallorders', null, cb);
 };
 
 
