@@ -61,7 +61,7 @@ ca.getStatus(function(err, status) {
     var ordersOpen = false;
 
     function cancelAllOrders(cb) {
-        console.warn('Canceling all outstanding orders...');
+        console.warn('\nCanceling all outstanding orders...');
         ca.cancelAllOrders(function(err, cancelations) {
             if (err) {
                 console.error('Error canceling orders: ', err);
@@ -87,9 +87,11 @@ ca.getStatus(function(err, status) {
             ordersOpen = true;
             var error = false;
             console.log('Executing, press control-c to cancel and kill any outstanding orders');
+            var i = 0;
+            var spinEls = ['-', '\\', '|', '/'];
             ca.executeTrades(suggestedTrades)
-                .on('executing', function(trade, order, orderId) {
-                    console.log('Executing trade:\n Trade: %s\n order: %s\n Order ID: %s', trade.toString(), order, orderId);
+                .on('executing', function(trade, orderId, order) {
+                    console.log('Executing trade:\n Trade: %s\n order: %j\n Order ID: %s', trade.toString(), order, orderId);
                     process.stdout.write('...');
                 })
                 .on('executed', function(trade, orderId) {
@@ -97,19 +99,24 @@ ca.getStatus(function(err, status) {
                 })
                 .on('orderProgress', function(completed, total) {
                     process.stdout.clearLine();
-                    process.stdout.write(util.format('%s/%s (%s%)', completed, total, Math.round(completed / total * 100)));
+                    var spinEl = spinEls[i];
+                    i++;
+                    if (i > spinEls.length) i = 0;
+                    process.stdout.write(util.format('%s/%s (%s%) %s', completed, total, Math.round(completed / total * 100), spinEl));
                 })
                 .on('error', function(err) {
-                    console.error('Error executing trades:');
-                    console.error(err);
+                    error = true;
+                    console.error('Error executing trades: ', err);
                     cancelAllOrders(function() {
                         process.exit(3);
                     });
                 })
                 .on('done', function() {
                     ordersOpen = false;
-                    if (!error) console.log('All trades executed!');
-                    process.exit();
+                    if (!error) {
+                        console.log('All trades executed!');
+                        process.exit();
+                    }
                 });
         } else if (response == 'no') {
             process.exit();

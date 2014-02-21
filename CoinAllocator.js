@@ -52,7 +52,7 @@ CoinAllocator.prototype.getTargetBalances = function(primaryCurrency, markets, b
 
 CoinAllocator.prototype.getStatus = function(cb) {
     var self = this;
-    async.parallel({
+    async.series({ // because of nonces, cryptsy's API sometimes chokes if we execute a second request before the first one completes
         markets: function(cb) {
             self.exchange.getMarkets(self.currencies, cb);
         },

@@ -26,7 +26,7 @@ Cryptsy.prototype.getBalances = function(currencies, cb) {
 Cryptsy.prototype.getMarkets = function(currencies, cb) {
     // todo: see if caching the marketids and then just fetching individual market pricesp brings better performance
     var cryptsy = this;
-    async.parallel({
+    async.series({ // doing these in parallel can cause issues if they are processed out of order due to the nonce being lower on a later order
         markets: function(cb) {
             cryptsy._getMarkets(cb);
         },
@@ -101,32 +101,56 @@ Cryptsy.prototype.executeTrade = function(markets, trade) {
     cryptsy.api('createorder', order, function(err, data) {
         if (err) return tradeProgress.emit('error', err);
         var orderId = data && data.orderid;
-        tradeProgress.emit('executing', trade, order, orderId);
+        tradeProgress.emit('executing', trade, orderId, order);
 
         function checkStatus() {
-            cryptsy.getOrder(function(err, order) {
+            cryptsy.getOpenOrder(order.marketid, orderId, function(err, openOrder) {
                 // todo: consider allowing one or two retries here since this is purely informational and we now have outstanding orders...
                 if (err) return tradeProgress.emit('error', err);
-                var completed = order.orig_quantity - order.quantity;
-                tradeProgress.emit('orderProgress', completed, order.orig_quantity);
-                if (!order.quantity) {
-                    tradeProgress.emit('executed', trade, order, orderId);
-                } else {
+                // openOrder only returns anything if the order has not yet been completely filled
+                if (openOrder) {
+                    var completed = openOrder.orig_quantity - openOrder.quantity;
+                    tradeProgress.emit('orderProgress', completed.toFixed(8), openOrder.orig_quantity);
                     // give it a short pause, then try again
-                    setTimeout(checkStatus, 500);
+                    setTimeout(checkStatus, 100);
+                } else {
+                    // if there's no open order, then it must be complete. Still, best check to be sure.
+                    cryptsy.getCompletedOrder(order.marketid, orderId, function(err, completedOrder) {
+                        if (err) return tradeProgress.emit('error', err);
+                        if (completedOrder) {
+                            tradeProgress.emit('orderProgress', order.quantity, order.quantity); // 100%
+                            tradeProgress.emit('executed', trade, orderId, completedOrder);
+                        } else {
+                            tradeProgress.emit('error', new Error('Unable to retrieve status of open order ' + orderId));
+                        }
+                    });
                 }
             });
         }
-        setTimeout(checkStatus, 100);
+        setTimeout(checkStatus, 50);
     });
     return tradeProgress;
 };
 
-Cryptsy.prototype.getOrder = function(orderId, cb) {
-    this.api('myorders', function(err, data) {
+Cryptsy.prototype.getOpenOrder = function(marketId, orderId, cb) {
+    this.api('myorders', {
+        marketid: marketId
+    }, function(err, data) {
         if (err) return cb(err);
         cb(null, _.find(data, {
             orderid: orderId
+        }));
+    });
+};
+
+Cryptsy.prototype.getCompletedOrder = function(marketid, orderId, cb) {
+    this.api('mytrades', {
+        marketid: marketid,
+        limit: 10
+    }, function(err, data) {
+        if (err) return cb(err);
+        cb(null, _.find(data, {
+            order_id: orderId
         }));
     });
 };
@@ -172,8 +196,8 @@ Cryptsy.prototype.convertTradeToOrder = function(markets, trade) {
             marketid: market.marketid,
             ordertype: 'Buy',
             // lasttradeprice is in the FROM currency, but quantity should be in the TO currency
-            quantity: trade.getAmount() * market.lasttradeprice, // fees will make this take slightly more out of the FROM account
-            price: market.lasttradeprice
+            quantity: (trade.getAmount() * market.last_trade).toFixed(8), // fees will make this take slightly more out of the FROM account
+            price: market.last_trade
         };
     } else {
         market = _.findWhere(markets, {
@@ -188,7 +212,7 @@ Cryptsy.prototype.convertTradeToOrder = function(markets, trade) {
             marketid: market.marketid,
             ordertype: 'Sell',
             quantity: trade.getAmount(), // fees will make this put slightly less into the TO account
-            price: market.lasttradeprice
+            price: market.last_trade
         };
     }
 };

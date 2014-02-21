@@ -26,7 +26,6 @@ Cryptsy's API frequently dies. In that case, you'll see an error message, usuall
 Todo
 ----
 
-* Fix bug with trade amount getting set to 0! Add a test!
 * Clean up CLI - try out https://github.com/chevex/yargs
 * Make the exchange provide subclasses of the Trade & TradeSet objects, make them perform validation at creation time
 * Figure out minimum exchange amounts (scrape? tiny fake transactions?)
@@ -40,3 +39,4 @@ Todo
 * Calculate Amount lost to fees with a given trade set
 * Calculate expected balances after a trade set is executed
 * Calculate total gained over time (perhaps belongs outside of this library?)
+* Split optimizer (& tests) into separate file
