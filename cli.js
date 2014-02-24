@@ -94,8 +94,8 @@ ca.getStatus(function(err, status) {
                     console.log('Executing trade:\n Trade: %s\n order: %j\n Order ID: %s', trade.toString(), order, orderId);
                     process.stdout.write('...');
                 })
-                .on('executed', function( /*trade, orderId, completedOrder*/ ) {
-                    process.stdout.write(' Done! - %j', arguments);
+                .on('executed', function(tradeid) {
+                    process.stdout.write(' Done! Trade ID: ', tradeid);
                 })
                 .on('orderProgress', function(completed, total) {
                     process.stdout.clearLine();

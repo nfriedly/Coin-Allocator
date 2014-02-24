@@ -11,10 +11,8 @@ describe('Cryptsy API adapter', function() {
     var calculateFeesBuy = require('./data/cryptsy/calculatefees-buy.json');
     var calculateFeesSell = require('./data/cryptsy/calculatefees-sell.json');
     var createOrder = require('./data/cryptsy/createorder.json');
-    var myOrders = {
-        status: 1,
-        'return': []
-    };
+    var myOrders = require('./data/cryptsy/myorders.json');
+    var myTrades = require('./data/cryptsy/mytrades.json');
 
     var currencies = ['BTC', 'LTC', 'DOGE'];
 
@@ -39,6 +37,8 @@ describe('Cryptsy API adapter', function() {
                 setTimeout(cb.bind(null, null, createOrder), 0);
             } else if (method == 'myorders') {
                 setTimeout(cb.bind(null, null, myOrders), 0);
+            } else if (method == 'mytrades') {
+                cb(null, myTrades);
             } else {
                 throw new Error('cryptsy.api called with unexpected parameters: ' + JSON.stringify([].slice.call(arguments)));
             }
@@ -281,9 +281,7 @@ convertTradeToOrder = function(markets, trade) {
             spyOn(cryptsy, 'getOpenOrder').andCallFake(function(marketid, orderid, cb) {
                 cb(null, openOrder);
             });
-            var completedOrder = {
-                mock: 'complete order'
-            };
+            var completedOrder = myTrades['return'][0];
             spyOn(cryptsy, 'getCompletedOrder').andCallFake(function(marketid, orderid, cb) {
                 console.log('getcompletedorder');
                 cb(null, completedOrder);
@@ -315,7 +313,7 @@ convertTradeToOrder = function(markets, trade) {
             expect(progressCb.calls.length).toBe(2);
             expect(progressCb).toHaveBeenCalledWith('0.02530000', '0.02530000');
             expect(cryptsy.getCompletedOrder).toHaveBeenCalledWith('3', createOrder.orderid, jasmine.any(Function));
-            expect(executedCb).toHaveBeenCalledWith(trade, createOrder.orderid, completedOrder);
+            expect(executedCb).toHaveBeenCalledWith(completedOrder.tradeid);
         });
     });
 });

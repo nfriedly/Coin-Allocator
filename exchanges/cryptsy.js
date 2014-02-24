@@ -119,7 +119,7 @@ Cryptsy.prototype.executeTrade = function(markets, trade) {
                         if (err) return tradeProgress.emit('error', err);
                         if (completedOrder) {
                             tradeProgress.emit('orderProgress', order.quantity, order.quantity); // 100%
-                            tradeProgress.emit('executed', trade, orderId, completedOrder);
+                            tradeProgress.emit('executed', completedOrder.tradeid);
                         } else {
                             tradeProgress.emit('error', new Error('Unable to retrieve status of open order ' + orderId));
                         }
