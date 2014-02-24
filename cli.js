@@ -94,14 +94,15 @@ ca.getStatus(function(err, status) {
                     console.log('Executing trade:\n Trade: %s\n order: %j\n Order ID: %s', trade.toString(), order, orderId);
                     process.stdout.write('...');
                 })
-                .on('executed', function(trade, orderId) {
-                    process.stdout.write('Done! Order ID: ', orderId);
+                .on('executed', function( /*trade, orderId, completedOrder*/ ) {
+                    process.stdout.write(' Done! - %j', arguments);
                 })
                 .on('orderProgress', function(completed, total) {
                     process.stdout.clearLine();
+                    process.stdout.cursorTo(0);
                     var spinEl = spinEls[i];
                     i++;
-                    if (i > spinEls.length) i = 0;
+                    if (i >= spinEls.length) i = 0;
                     process.stdout.write(util.format('%s/%s (%s%) %s', completed, total, Math.round(completed / total * 100), spinEl));
                 })
                 .on('error', function(err) {
