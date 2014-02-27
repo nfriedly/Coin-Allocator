@@ -24,7 +24,8 @@
   "dependencies": {
     "cryptsy": "~0.1.3",
     "lodash": "~2.4.1",
-    "async": "~0.2.10"
+    "async": "~0.2.10",
+    "yargs": "~1.1.3"
   },
   "devDependencies": {
     "jasmine-node": "~1.13.1",
