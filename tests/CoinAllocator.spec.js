@@ -3,6 +3,11 @@ describe('CoinAllocator', function() {
     var CoinAllocator = require('../CoinAllocator.js');
     var TradeSet = CoinAllocator.TradeSet;
     var Trade = CoinAllocator.Trade;
+    var allocation = {
+        BTC: 50,
+        LTC: 0,
+        DOGE: 50
+    };
     var currencies = ['BTC', 'LTC', 'DOGE'];
     var primaryCurrency = 'BTC';
     var threshold = 1;
@@ -55,13 +60,34 @@ describe('CoinAllocator', function() {
 
     beforeEach(function() {
         coinAllocator = new CoinAllocator({
-            currencies: currencies,
+            allocation: allocation,
             primaryCurrency: primaryCurrency,
             publicKey: "PUBLIC_KEY",
             privateKey: "PRIVATE_KEY",
             threshold: threshold
         });
         setCurrenciesBtcDoge();
+    });
+
+    describe('instance creation', function() {
+        it("should throw if the allocation doesn't add up to 100%", function() {
+            expect(function() {
+                new CoinAllocator({
+                    allocation: {
+                        a: 50,
+                        b: 60
+                    }
+                });
+            }).toThrow();
+            expect(function() {
+                new CoinAllocator({
+                    allocation: {
+                        a: 30,
+                        b: 30
+                    }
+                });
+            }).toThrow();
+        });
     });
 
     describe('getRatio', function() {
@@ -98,6 +124,23 @@ describe('CoinAllocator', function() {
         it('should suggest no changes when everything is equal', function() {
             balances.DOGE = balances.BTC * markets.BTC.DOGE.ratio;
             expect(coinAllocator.getTargetBalances(primaryCurrency, markets, balances)).toEqual(balances);
+        });
+
+        it('should handle a 40-60 split', function() {
+            coinAllocator = new CoinAllocator({
+                allocation: {
+                    BTC: 40,
+                    DOGE: 60
+                },
+                primaryCurrency: primaryCurrency,
+                publicKey: "PUBLIC_KEY",
+                privateKey: "PRIVATE_KEY",
+                threshold: threshold
+            });
+            expect(coinAllocator.getTargetBalances(primaryCurrency, markets, balances)).toEqual({
+                BTC: 0.8,
+                DOGE: 120
+            });
         });
     });
 

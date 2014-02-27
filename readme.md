@@ -36,7 +36,6 @@ Todo
 * Figure out minimum exchange amounts (scrape? tiny fake transactions?)
 * Make Trade Objects throw on creation if amount is below minimum exchange amount
 * Set up live instance to rebalance my account
-* Support allocation by percentage
 * Support 0% to auto-sell
 * Better error for bogus / unsupported currencies
 * Support A->B->C paths even when B is not a requested currency
