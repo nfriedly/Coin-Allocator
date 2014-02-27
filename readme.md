@@ -5,9 +5,7 @@ Coin Allocator
 
 Taking the lessons from [The Intelligent Asset Allocator](http://www.amazon.com/gp/product/0071362363/ref=as_li_ss_il?ie=UTF8&camp=1789&creative=390957&creativeASIN=0071362363&linkCode=as2&tag=nfriedly-20) and applying them to BitCoin and friends via [Cryptsy](https://www.cryptsy.com/users/register?refid=154285).
 
-Takes your target allocation* and your current balances and suggests a set of trades to rebalance while optimizing for lowest fees and number of trades. Then, optionally, executes those trades for you.
-
-* Currently, only equal allocations are supported. Arbitrary percentages will be supported soon.
+Takes your target allocation and your current balances and suggests a set of trades to rebalance while optimizing for lowest fees and number of trades. Then, optionally, executes those trades for you.
 
 WARNING
 ------------
@@ -23,11 +21,6 @@ You may also want to edit the `currencies` and `primaryCurrency` lines in `cli.j
 
 Note: all of your currencies must be directly convertible to your primary currency via the cryptsy API, or it will fail. (This means, in effect, that your primary currency must be BTC or LTC). I plan on adding the ability to find indirect paths from one currency to another eventually.
 
-Common Issues
--------------
-
-Cryptsy's API frequently dies. In that case, you'll see an error message, usually with something about 'Error parsing JSON' and some HTML telling you about a 'Bad Gateway'. If that happens, just wait a minute or two and try again.
-
 Todo
 ----
 
@@ -36,7 +29,6 @@ Todo
 * Figure out minimum exchange amounts (scrape? tiny fake transactions?)
 * Make Trade Objects throw on creation if amount is below minimum exchange amount
 * Set up live instance to rebalance my account
-* Support 0% to auto-sell
 * Better error for bogus / unsupported currencies
 * Support A->B->C paths even when B is not a requested currency
 * Add support for BTC-e (and other exchanges?)
