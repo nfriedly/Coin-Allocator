@@ -251,6 +251,11 @@ convertTradeToOrder = function(markets, trade) {
             jasmine.Clock.useMock();
         });
 
+        afterEach(function() {
+            // without this, it will let the callbacks fire *after* the mock has been uninstalled - and make actual requests to the cryptsy API
+            jasmine.Clock.tick(50);
+        });
+
         it('should call the cryptsy API with the trade and return an EventEmitter', function() {
 
             progress = cryptsy.executeTrade(markets, trade);
@@ -271,6 +276,7 @@ convertTradeToOrder = function(markets, trade) {
 
             expect(errorCb).not.toHaveBeenCalled();
             expect(executingCb).toHaveBeenCalledWith(trade, createOrder.orderid, order);
+
         });
 
         it('should emit orderProgress events as the order is completed and an executed event afterwards', function() {
@@ -283,7 +289,6 @@ convertTradeToOrder = function(markets, trade) {
             });
             var completedOrder = myTrades['return'][0];
             spyOn(cryptsy, 'getCompletedOrder').andCallFake(function(marketid, orderid, cb) {
-                console.log('getcompletedorder');
                 cb(null, completedOrder);
             });
 
@@ -291,8 +296,6 @@ convertTradeToOrder = function(markets, trade) {
             progress.on('orderProgress', progressCb);
             progress.on('executed', executedCb);
             progress.on('error', errorCb);
-            progress.on('orderProgress', console.log.bind(console, 'log orderprogress'));
-            progress.on('executed', console.log.bind(console, 'log executed'));
 
 
             jasmine.Clock.tick(50);
@@ -306,7 +309,6 @@ convertTradeToOrder = function(markets, trade) {
 
             openOrder = null;
             jasmine.Clock.tick(101);
-            console.log('after ticks');
 
             expect(errorCb).not.toHaveBeenCalled();
             expect(cryptsy.getOpenOrder.calls.length).toBe(2);

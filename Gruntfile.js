@@ -1,6 +1,8 @@
 module.exports = function(grunt) {
 
-    var allScripts = ['*.js', 'exchanges/*.js', 'tests/*.js'];
+    var scripts = ['*.js', 'exchanges/*.js', 'tests/*.js'];
+    var json = ['.jshintrc', 'tests/.jshintrc', 'tests/**.json'];
+    var scriptsAndJson = scripts.concat(json);
 
     grunt.initConfig({
         jasmine_node: {
@@ -16,14 +18,14 @@ module.exports = function(grunt) {
             options: {
                 jshintrc: true
             },
-            all: allScripts
+            all: scriptsAndJson
         },
         jsbeautifier: {
             rewrite: {
-                src: allScripts
+                src: scriptsAndJson
             },
             verify: {
-                src: allScripts,
+                src: scriptsAndJson,
                 options: {
                     mode: "VERIFY_ONLY"
                 }
@@ -31,7 +33,7 @@ module.exports = function(grunt) {
         },
         watch: {
             scripts: {
-                files: ['*.js', 'exchanges/*.js', 'tests/*.js'],
+                files: scriptsAndJson,
                 tasks: ['default'],
             }
         }

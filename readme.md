@@ -9,6 +9,11 @@ Takes your target allocation* and your current balances and suggests a set of tr
 
 * Currently, only equal allocations are supported. Arbitrary percentages will be supported soon.
 
+WARNING
+------------
+
+This software is in alpha stage. It is incomplete and almost guaranteed to have bugs. Using it may cause you to loose money or experience other issues. You have been warned.
+
 Setup
 -----
 
@@ -40,3 +45,4 @@ Todo
 * Calculate expected balances after a trade set is executed
 * Calculate total gained over time (perhaps belongs outside of this library?)
 * Split optimizer (& tests) into separate file
+* Figure out better names for executing/executed/orderProgress events - maybe order/progress/trade?

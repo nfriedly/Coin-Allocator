@@ -1,17 +1,2 @@
-{
-    "node": true,
-    "unused": true,
-    "undef": true,
-    "globals": {
-        "jasmine": false,
-        "describe": false,
-        "beforeEach": false,
-        "it": false,
-        "spyOn": false,
-        "expect": false,
-        "xdescribe": false,
-        "xit": false,
-        "runs": false,
-        "waitsFor": false
-    }
-}
+{ "node": true, "unused": true, "undef": true, "globals": { "jasmine": false, "describe": false, "beforeEach": false, "afterEach": false, "it": false, "spyOn": false, "expect": false, "xdescribe": false, "xit": false, "runs": false, "waitsFor": false
+} }

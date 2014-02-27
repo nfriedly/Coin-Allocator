@@ -29,7 +29,7 @@ if (!publicKey || !privateKey) throw 'CRYPTSY_PUBLIC_KEY and CRYPTSY_PRIVATE_KEY
 var CoinAllocator = require('./CoinAllocator.js');
 
 var ca = new CoinAllocator({
-    currencies: ['BTC', 'LTC', 'DOGE'],
+    allocation: ['BTC', 'LTC', 'DOGE'],
     primaryCurrency: 'BTC',
     publicKey: publicKey,
     privateKey: privateKey
