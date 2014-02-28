@@ -18,16 +18,21 @@ function CoinAllocator(options) {
     this.exchange = new Cryptsy(options.publicKey, options.privateKey);
     this.allocation = options.allocation;
     this.currencies = Object.keys(this.allocation);
-    var allocationTotal = _.reduce(this.allocation, sumReducer);
+    var allocationTotal = CoinAllocator.sumObject(this.allocation);
     if (allocationTotal != 100) {
         throw new Error('Allocation percentages add up to 100, combined total was ' + allocationTotal);
     }
     this.threshold = options.threshold / 100 || 0.01;
 }
 
-function sumReducer(sum, num) {
-    return sum + num;
-}
+// todo: consider moving this to a different file
+CoinAllocator.sumObject = function(obj) {
+    return _.reduce(obj, function(sum, num) {
+        return sum + num;
+    });
+};
+
+
 
 CoinAllocator.prototype.getRatio = function(targetCurrency, markets, currency) {
     if (currency == targetCurrency) {
@@ -48,7 +53,7 @@ CoinAllocator.prototype.getBalancesInPrimary = function(primaryCurrency, markets
 
 CoinAllocator.prototype.getTargetBalances = function(primaryCurrency, markets, balances) {
     var balancesInPrimary = this.getBalancesInPrimary(primaryCurrency, markets, balances);
-    var totalInPrimary = _.reduce(balancesInPrimary, sumReducer);
+    var totalInPrimary = CoinAllocator.sumObject(balancesInPrimary);
     // todo: support %-based targets in addition to even splitting
     var targetBalances = _.mapValues(balancesInPrimary, function(amount, currency) {
         var percentage = this.allocation[currency];
