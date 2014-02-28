@@ -12,14 +12,31 @@ WARNING
 
 This software is in alpha stage. It is incomplete and almost guaranteed to have bugs. Using it may cause you to loose money or experience other issues. You have been warned.
 
-Setup
------
+Setup & Usage
+-------------
 
-[Turn on the API](https://www.cryptsy.com/users/settings) and set your `CRYPTSY_PUBLIC_KEY` and `CRYPTSY_PRIVATE_KEY` env vars to the appropriate values, then run `node cli.js`. 
+1. To run your own copy, first download and install [Node.js](http://nodejs.org/), then install Coin Allocator with this command:
+    npm install -g coin-allocator
 
-You may also want to edit the `currencies` and `primaryCurrency` lines in `cli.js`. 
+2. If you don't already have a Cryptsy account, please use this link* to sign up: https://www.cryptsy.com/users/register?refid=154285
 
-Note: all of your currencies must be directly convertible to your primary currency via the cryptsy API, or it will fail. (This means, in effect, that your primary currency must be BTC or LTC). I plan on adding the ability to find indirect paths from one currency to another eventually.
+    Optional: If already signed up for Cryptsy but would still like to give me credit*, you may enter the following trade key in the "I was referred by" section of the [dashboard](https://www.cryptsy.com/users/dashboard): 93c94927ce29eebbb9f6aa6db5ca3fb6f164e97e
+
+3. [Turn on the API](https://www.cryptsy.com/users/settings) for your Cryptsy account and grab your public and private keys. 
+
+4. Optional: Set your `CRYPTSY_PUBLIC_KEY` and `CRYPTSY_PRIVATE_KEY` environment variables to the appropriate values
+
+5. Run `coin-allocator` with your desired allocation for example, `coin-allocator --allocation.BTC 60 --allocation.LTC 40 --public-key a1b2c3... --private-key d1e2f3...` (Omit the keys if your already stored them in environment variables.) 
+
+That's it! It should read your account balances and the current market rates and suggest a set of trades to re-balance your account. You will then have to type 'yes' for it to execute the suggested trades.
+
+Tips:
+* Set a currencies' allocation to 0 sell everything you earn in that currency.
+* Add the `--yes` argument to make it automatically execute the trades with out asking for confirmation.
+* You can kill the program at any time by pressing `Control-c`. If there are trades open, it will attempt to cancel them.
+* Coin-Allocator can also be `require()`'d by other Node.js code so you can build your own applications on top of it. I will document the API once it settles down a bit, and probably build a web site around the library eventually....
+
+\* Note: Links here are referral links. If you use my referral link for cryptsy.com, I will get a commission that is equivalent to about 0.000001% of your trade volume. (0.2% to 0.3% trade fee * 0.1% in Cryptsy Points * Cryptsy Point / BTC exchange rate - 0.00088743 at the time of writing.) This comes out of Cryptsy's fee and does not affect your account in any way.
 
 Todo
 ----
