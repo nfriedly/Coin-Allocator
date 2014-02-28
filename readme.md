@@ -36,7 +36,7 @@ Tips:
 * You can kill the program at any time by pressing `Control-c`. If there are trades open, it will attempt to cancel them.
 * Coin-Allocator can also be `require()`'d by other Node.js code so you can build your own applications on top of it. I will document the API once it settles down a bit, and probably build a web site around the library eventually....
 
-\* Note: Links here are referral links. If you use my referral link for cryptsy.com, I will get a commission that is equivalent to about 0.000001% of your trade volume. (0.2% to 0.3% trade fee * 0.1% in Cryptsy Points * Cryptsy Point / BTC exchange rate - 0.00088743 at the time of writing.) This comes out of Cryptsy's fee and does not affect your account in any way.
+<sub>\* Note: Links here are referral links. If you use my referral link for cryptsy.com, I will get a commission that is equivalent to about 0.000001% of your trade volume. (0.2% to 0.3% trade fee * 0.1% in Cryptsy Points * Cryptsy Point / BTC exchange rate - 0.00088743 at the time of writing.) This comes out of Cryptsy's fee and does not affect your account in any way.</sub>
 
 Todo
 ----
