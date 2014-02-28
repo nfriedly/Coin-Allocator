@@ -16,17 +16,17 @@ Setup & Usage
 -------------
 
 1. To run your own copy, first download and install [Node.js](http://nodejs.org/), then install Coin Allocator with this command:
-    npm install -g coin-allocator
+    `npm install -g coin-allocator`
 
 2. If you don't already have a Cryptsy account, please use this link* to sign up: https://www.cryptsy.com/users/register?refid=154285
 
-    Optional: If already signed up for Cryptsy but would still like to give me credit*, you may enter the following trade key in the "I was referred by" section of the [dashboard](https://www.cryptsy.com/users/dashboard): 93c94927ce29eebbb9f6aa6db5ca3fb6f164e97e
+    Optional: If already signed up for Cryptsy but would still like to give me credit*, you may enter the following trade key in the "I was referred by" section of the [dashboard](https://www.cryptsy.com/users/dashboard): `93c94927ce29eebbb9f6aa6db5ca3fb6f164e97e`
 
 3. [Turn on the API](https://www.cryptsy.com/users/settings) for your Cryptsy account and grab your public and private keys. 
 
 4. Optional: Set your `CRYPTSY_PUBLIC_KEY` and `CRYPTSY_PRIVATE_KEY` environment variables to the appropriate values
 
-5. Run `coin-allocator` with your desired allocation for example, `coin-allocator --allocation.BTC 60 --allocation.LTC 40 --public-key a1b2c3... --private-key d1e2f3...` (Omit the keys if your already stored them in environment variables.) 
+5. Run `coin-allocator` with your desired allocation. For example, this would give a 60/40 BTC/LTC split: `coin-allocator --allocation.BTC 60 --allocation.LTC 40 --public-key a1b2c3... --private-key d1e2f3...` (Omit the keys if your already stored them in environment variables.) 
 
 That's it! It should read your account balances and the current market rates and suggest a set of trades to re-balance your account. You will then have to type 'yes' for it to execute the suggested trades.
 
