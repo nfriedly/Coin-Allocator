@@ -24,7 +24,6 @@ Note: all of your currencies must be directly convertible to your primary curren
 Todo
 ----
 
-* Clean up CLI - try out https://github.com/chevex/yargs
 * Make the exchange provide subclasses of the Trade & TradeSet objects, make them perform validation at creation time
 * Figure out minimum exchange amounts (scrape? tiny fake transactions?)
 * Make Trade Objects throw on creation if amount is below minimum exchange amount

@@ -37,6 +37,10 @@ var argv = require('yargs')
         allocation: {
             describe: 'Add `--allocation.SYMBOL %` for each currency you want. Ex: `--allocation.BTC 30` for 30% BTC',
             demand: 'At least one --allocation.SYMBOL % argument is required. For example, `--allocation.BTC 60 --allocation.LTC 40` for a 60%/40% split between BTC and LTC,'
+        },
+        yes: {
+            describe: 'Automatically execute the suggested trades without asking for confirmation',
+            alias: 'y'
         }
     })
     .check(function(argv) {
@@ -148,5 +152,9 @@ ca.getStatus(function(err, status) {
             process.exit();
         });
     });
-    rl.question('Execute these trades? (yes/no): ', handleResponse);
+    if (argv.yes) {
+        handleResponse('yes');
+    } else {
+        rl.question('Execute these trades? (yes/no): ', handleResponse);
+    }
 });
