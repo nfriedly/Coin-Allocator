@@ -19,25 +19,38 @@ var readline = require('readline');
 var util = require('util');
 var _ = require('lodash');
 
-
-// configuration
-var publicKey = process.env.CRYPTSY_PUBLIC_KEY;
-var privateKey = process.env.CRYPTSY_PRIVATE_KEY;
-
-if (!publicKey || !privateKey) throw 'CRYPTSY_PUBLIC_KEY and CRYPTSY_PRIVATE_KEY env vars must be set';
-
 var CoinAllocator = require('./CoinAllocator.js');
 
+var argv = require('yargs')
+    .usage('Suggests and, optionally executes, trades to make your current allocation match your target allocation.\nUsage: --public-key 1a2b3d.. --private-key 4f5a6b... --allocation.BTC 50 --allocation.LTC 50')
+    .options({
+        'public-key': {
+            describe: 'API public key, defaults to CRYPTSY_PUBLIC_KEY environment variable'
+        },
+        'private-key': {
+            describe: 'API private key, defaults to CRYPTSY_PRIVATE_KEY environment variable'
+        },
+        primary: {
+            describe: 'Primary currency - all other currencies must be tradable to and from this currency.',
+            default: 'BTC'
+        },
+        allocation: {
+            describe: 'Add `--allocation.SYMBOL %` for each currency you want. Ex: `--allocation.BTC 30` for 30% BTC',
+            demand: 'At least one --allocation.SYMBOL % argument is required. For example, `--allocation.BTC 60 --allocation.LTC 40` for a 60%/40% split between BTC and LTC,'
+        }
+    })
+    .check(function(argv) {
+        argv.publicKey = argv['public-key'] || process.env.CRYPTSY_PUBLIC_KEY;
+        argv.privateKey = argv['private-key'] || process.env.CRYPTSY_PRIVATE_KEY;
+        if (!argv.publicKey || !argv.privateKey) throw 'CRYPTSY_PUBLIC_KEY and CRYPTSY_PRIVATE_KEY env vars must be set';
+    })
+    .argv;
+
 var ca = new CoinAllocator({
-    allocation: {
-        'BTC': 50,
-        'LTC': 20,
-        'DOGE': 30,
-        'XPM': 0
-    },
-    primaryCurrency: 'BTC',
-    publicKey: publicKey,
-    privateKey: privateKey
+    allocation: argv.allocation,
+    primaryCurrency: argv.primary,
+    publicKey: argv.publicKey,
+    privateKey: argv.privateKey
 });
 
 
@@ -112,7 +125,7 @@ ca.getStatus(function(err, status) {
                 })
                 .on('error', function(err) {
                     error = true;
-                    console.error('Error executing trades: ', err);
+                    console.error('\nError executing trades: ', err);
                     cancelAllOrders(function() {
                         process.exit(3);
                     });
