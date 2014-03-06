@@ -2,3 +2,11 @@ language: node_js
 node_js:
 - '0.11'
 - '0.10'
+deploy:
+  provider: npm
+  email: nathan@nfriedly.com
+  api_key:
+    secure: dwe+QDE9wY6MhSlRWLpf0qUXKxKeaFNjB6m/FHmlTa53e2ifaglemNHkWDZMM3YeatL8g3l1AFDmBkGNK9QToiWonOs42Z5x+jgwvzImBKuQcRxMzjzIulr5coRQq2lgwGnO8qlzOjl/fr+VpiwZB1j4CvkWTNcAiPutUBY+jjo=
+  on:
+    tags: true
+    repo: nfriedly/Coin-Allocator
