@@ -1,0 +1,4 @@
+# node_modules and a bunch of other oddball files are automatically skipped by npm
+# https://www.npmjs.org/doc/developers.html#Keeping-files-out-of-your-package
+tests/
+Gruntfile.js
