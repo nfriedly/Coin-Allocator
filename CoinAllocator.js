@@ -50,17 +50,23 @@ CoinAllocator.prototype.getBalancesInPrimary = function(primaryCurrency, markets
     }, this);
 };
 
-
 CoinAllocator.prototype.getTargetBalances = function(primaryCurrency, markets, balances) {
     var balancesInPrimary = this.getBalancesInPrimary(primaryCurrency, markets, balances);
     var totalInPrimary = CoinAllocator.sumObject(balancesInPrimary);
-    // todo: support %-based targets in addition to even splitting
     var targetBalances = _.mapValues(balancesInPrimary, function(amount, currency) {
         var percentage = this.allocation[currency];
         var targetInPrimary = totalInPrimary * percentage / 100;
         return targetInPrimary * this.getRatio(currency, markets, primaryCurrency);
     }, this);
     return targetBalances;
+};
+
+CoinAllocator.prototype.getCurrentAllocation = function(primaryCurrency, markets, balances) {
+    var balancesInPrimary = this.getBalancesInPrimary(primaryCurrency, markets, balances);
+    var totalInPrimary = CoinAllocator.sumObject(balancesInPrimary);
+    return _.mapValues(balancesInPrimary, function(amount) {
+        return amount / totalInPrimary * 100;
+    }, this);
 };
 
 CoinAllocator.prototype.getStatus = function(cb) {
@@ -74,10 +80,13 @@ CoinAllocator.prototype.getStatus = function(cb) {
         }
     }, function(err, results) {
         if (err) return cb(err);
+        // todo: avoid duplicated work between these two functions
+        var currentAllocation = self.getCurrentAllocation(self.primaryCurrency, results.markets, results.balances);
         var targetBalances = self.getTargetBalances(self.primaryCurrency, results.markets, results.balances);
         cb(null, {
             markets: results.markets,
             balances: results.balances,
+            allocation: currentAllocation,
             targetBalances: targetBalances
         });
     });
@@ -183,7 +192,6 @@ CoinAllocator.prototype.getBaselineSuggestedTrades = function(primaryCurrency, m
  */
 CoinAllocator.prototype.optimizeTrades = function(primaryCurrency, markets, balances, targetBalances, threshold, tradeSet) {
     var trades = tradeSet.getTrades();
-    if (trades.length > 10) throw 'die!';
     var sells = [];
     var buys = [];
     trades.forEach(function(trade) {

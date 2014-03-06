@@ -3,7 +3,7 @@ Coin Allocator
 
 [![Build Status](https://travis-ci.org/nfriedly/Coin-Allocator.png?branch=master)](https://travis-ci.org/nfriedly/Coin-Allocator)
 
-Taking the lessons from [The Intelligent Asset Allocator](http://www.amazon.com/gp/product/0071362363/ref=as_li_ss_il?ie=UTF8&camp=1789&creative=390957&creativeASIN=0071362363&linkCode=as2&tag=nfriedly-20) and applying them to BitCoin and friends via [Cryptsy](https://www.cryptsy.com/users/register?refid=154285).
+Taking the lessons from [The Intelligent Asset Allocator](http://www.amazon.com/gp/product/0071362363/ref=as_li_ss_il?ie=UTF8&camp=1789&creative=390957&creativeASIN=0071362363&linkCode=as2&tag=nfriedly-20) and applying them to Bitcoin and friends via [Cryptsy](https://www.cryptsy.com/users/register?refid=154285).
 
 Takes your target allocation and your current balances and suggests a set of trades to rebalance while optimizing for lowest fees and number of trades. Then, optionally, executes those trades for you.
 
@@ -31,8 +31,9 @@ Setup & Usage
 That's it! It should read your account balances and the current market rates and suggest a set of trades to re-balance your account. You will then have to type 'yes' for it to execute the suggested trades.
 
 Tips:
-* Set a currencies' allocation to 0 sell everything you earn in that currency.
+* Set a currencies' allocation to 0 sell everything you have in that currency.
 * Add the `--yes` argument to make it automatically execute the trades with out asking for confirmation.
+* Set up a cron job to run this script every so often (maybe once per month), and then forget about it :)
 * You can kill the program at any time by pressing `Control-c`. If there are trades open, it will attempt to cancel them.
 * Coin-Allocator can also be `require()`'d by other Node.js code so you can build your own applications on top of it. I will document the API once it settles down a bit, and probably build a web site around the library eventually....
 
@@ -41,6 +42,8 @@ Tips:
 Todo
 ----
 
+* Clean up logging output to have less syntax and less-arbitrary line breaks
+* Support minimum threshold in percentage points off of target
 * Make the exchange provide subclasses of the Trade & TradeSet objects, make them perform validation at creation time
 * Figure out minimum exchange amounts (scrape? tiny fake transactions?)
 * Make Trade Objects throw on creation if amount is below minimum exchange amount

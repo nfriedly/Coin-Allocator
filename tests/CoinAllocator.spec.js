@@ -168,7 +168,11 @@ describe('CoinAllocator', function() {
             expect(cb.calls[0].args[1]).toEqual({
                 markets: markets,
                 balances: balances,
-                targetBalances: tb
+                targetBalances: tb,
+                allocation: {
+                    BTC: 50,
+                    DOGE: 50
+                }
             });
 
         });

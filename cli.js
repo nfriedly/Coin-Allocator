@@ -68,10 +68,10 @@ ca.getStatus(function(err, status) {
         }
         console.error(err.stack || err);
         process.exit(1);
-
     }
 
     console.log("Current balances:", status.balances);
+    console.log("Current allocation (%):", status.allocation);
     console.log("Target after rebalancing:", status.targetBalances);
     var suggestedTrades = ca.getSuggestedTrades(status);
     if (!suggestedTrades.getTrades().length) {
