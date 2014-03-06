@@ -10,4 +10,3 @@ deploy:
   on:
     tags: true
     repo: nfriedly/Coin-Allocator
-    node: 0.10
