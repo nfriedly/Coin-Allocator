@@ -33,6 +33,34 @@ CoinAllocator.sumObject = function(obj) {
 };
 
 
+CoinAllocator.getTradeGains = function(status, cb) {
+    // per-currency gains: 
+    // lookup deposits & withdrawals in selected currencies
+    // lookup trades between selected currencies & non-selected currencies and treat them as additional deposits / withdrawls
+    // calculate the total deposits & withdrawals in each currency
+    // for each currency, calculate it's trade gain = (current balance + withdrawls - deposits) / deposits
+
+    // overall gains:
+    // convert totals into primary currency at current rate
+    // combine totals into all deposits and all withdrawals
+    // calculate current balance in primary currency
+    // calculate overall trade gain = (current balance + withdrawls - deposits) / deposits
+    var self = this;
+    async.series({ // because of nonces, cryptsy's API sometimes chokes if we execute a second request before the first one completes
+        transactions: function(cb) {
+            self.exchange.getTransactionHistory(self.currencies, cb);
+        },
+        trades: function(cb) {
+            self.exchange.getTradehistory(self.currencies, cb);
+        }
+    }, function(err, results) {
+        if (err) return cb(err);
+
+
+        cb(null, {});
+        return results;
+    });
+};
 
 CoinAllocator.prototype.getRatio = function(targetCurrency, markets, currency) {
     if (currency == targetCurrency) {

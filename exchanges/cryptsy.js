@@ -217,6 +217,55 @@ Cryptsy.prototype.convertTradeToOrder = function(markets, trade) {
     }
 };
 
+Cryptsy.prototype.getTransactionHistory = function(cb) {
+    var cryptsy = this;
+    this._getMarkets(function(err) {
+        if (err) return cb(err);
+        cryptsy.api('mytransactions', null, function(err, data) {
+            if (err) return cb(err);
+
+            var transactionHistory = _.chain(data['return']).map(function(trans) {
+                if (trans.type == 'Withdrawal') {
+                    trans.amount = -trans.amount;
+                }
+            }).map(_.pick.bind(_, ['timestamp', 'currency', 'amount']))
+                .value();
+
+            cb(transactionHistory);
+        });
+    });
+};
+
+Cryptsy.prototype.getTradehistory = function(cb) {
+    var cryptsy = this;
+    this._getMarkets(function(err, markets) {
+        cryptsy.api('allmytrades', null, function(err, data) {
+            if (err) return cb(err);
+            var trades = data['return'].map(function(trade) {
+                var market = markets[trade.marketid];
+                var ret = {
+                    feeAmount: trade.fee,
+                    feeCurrency: market.secondary_currency_code
+                };
+                if (trade.tradetype == "Buy") {
+                    ret.fromCurrency = market.secondary_currency_code;
+                    ret.toCurrency = market.primary_currency_code;
+                    ret.fromAmount = trade.quantity;
+                    ret.toAmount = trade.total;
+                } else if (trade.tradetype == "Sell") {
+                    ret.fromCurrency = market.primary_currency_code;
+                    ret.toCurrency = market.secondary_currency_code;
+                    ret.fromAmount = trade.total;
+                    ret.toAmount = trade.quantity;
+                } else {
+                    cb(new Error('Unrecognized trade type in history: ' + JSON.stringify(trade)));
+                }
+            });
+            cb(null, trades);
+        });
+    });
+};
+
 /*
 Cryptsy.prototype.validateTradeSet = function(tradeSet, cb) {
     var cryptsy = this;
