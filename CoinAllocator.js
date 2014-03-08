@@ -220,16 +220,18 @@ CoinAllocator.prototype.getBaselineSuggestedTrades = function(primaryCurrency, m
  */
 CoinAllocator.prototype.optimizeTrades = function(primaryCurrency, markets, balances, targetBalances, threshold, tradeSet) {
     var trades = tradeSet.getTrades();
-    var sells = [];
-    var buys = [];
-    trades.forEach(function(trade) {
+    var groupedTrades = _.groupBy(trades, function(trade) {
         if (trade.getFrom() == primaryCurrency) {
-            buys.push(trade);
+            return 'buys';
         } else if (trade.getTo() == primaryCurrency) {
-            sells.push(trade);
+            return 'sells';
+        } else {
+            // it's already been optimized and we're not going to use it here
+            return 'swaps';
         }
-        // else it's already been optimized and we're not going to look at it.
     });
+    var sells = groupedTrades.sells || [];
+    var buys = groupedTrades.buys || [];
 
     // b-a because we want to work with larger amounts first
     buys.sort(function(a, b) {
