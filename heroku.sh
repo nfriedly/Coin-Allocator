@@ -1,0 +1,1 @@
+node cli.js --allocation.BTC 50 --allocation.LTC 20 --allocation.DOGE 25 --allocation.XPM 5 --no-compute-gains

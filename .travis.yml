@@ -3,10 +3,16 @@ node_js:
 - '0.11'
 - '0.10'
 deploy:
-  provider: npm
+- provider: npm
   email: nathan@nfriedly.com
   api_key:
     secure: dwe+QDE9wY6MhSlRWLpf0qUXKxKeaFNjB6m/FHmlTa53e2ifaglemNHkWDZMM3YeatL8g3l1AFDmBkGNK9QToiWonOs42Z5x+jgwvzImBKuQcRxMzjzIulr5coRQq2lgwGnO8qlzOjl/fr+VpiwZB1j4CvkWTNcAiPutUBY+jjo=
   on:
     tags: true
+    repo: nfriedly/Coin-Allocator
+- provider: heroku
+  api_key:
+    secure: GTFU4MiJMueOW3Peijb0kx++8i18gvfYQ9z+IvCoekHLGUODvKolVN8iPdKXyM/O8M4fOm+J2lJVZOnZQK4k9ym/tkscE0/b/H8nhKtl1ACqUG4iSaRiSu1CrflX5Du/VvqPjghbwrCNsrhzCTsbQ/VxXLVzoaJS1S0UJN8qpcU=
+  app: coin-allocator
+  on:
     repo: nfriedly/Coin-Allocator
