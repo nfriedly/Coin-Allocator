@@ -106,9 +106,8 @@ CoinAllocator.prototype.getTradeGains = function(status, cb) {
 
         /* returns {deposits: #, withdrawals: #} where # is the sum of all transactions of that type, converted to the primary currency at current values */
         var totalsInPrimary = _.mapValues(totals, function(transactionsByCurrency, type /* deposit or withdrawal*/ ) {
-            var totalsInPrimaryByCurrency = self.getBalancesInPrimary(self.primaryCurrency, status.markets, transactionsByCurrency);
+            var totalsInPrimaryByCurrency = self.getBalancesInPrimary(self.primaryCurrency, status.markets, _.pick(transactionsByCurrency, self.currencies));
             var sumInPrimary = CoinAllocator.sumObject(totalsInPrimaryByCurrency);
-            console.log('totals in primary: ', type, transactionsByCurrency, totalsInPrimaryByCurrency, sumInPrimary);
             return sumInPrimary;
         });
 
