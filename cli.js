@@ -52,7 +52,7 @@ var argv = require('yargs')
         argv.publicKey = argv['public-key'] || process.env.CRYPTSY_PUBLIC_KEY;
         argv.privateKey = argv['private-key'] || process.env.CRYPTSY_PRIVATE_KEY;
         if (!argv.publicKey || !argv.privateKey) throw 'CRYPTSY_PUBLIC_KEY and CRYPTSY_PRIVATE_KEY env vars must be set';
-        if(argv.yes && !argv.trade) throw '--yes and --no-trade are mutually exclusive';
+        if (argv.yes && !argv.trade) throw '--yes and --no-trade are mutually exclusive';
     })
     .argv;
 
@@ -153,7 +153,7 @@ async.auto(steps, function(err, results) {
     console.log(suggestedTradesTable.toString());
 
     // if the --no-trade flag was set, then stop here.
-    if(!argv.trade) {
+    if (!argv.trade) {
         process.exit(0);
     }
 
