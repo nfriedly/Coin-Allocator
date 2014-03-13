@@ -21,12 +21,14 @@ Setup & Usage
 2. If you don't already have a Cryptsy account, please use this link* to sign up: https://www.cryptsy.com/users/register?refid=154285
 
     Optional: If already signed up for Cryptsy but would still like to give me credit*, you may enter the following trade key in the "I was referred by" section of the [dashboard](https://www.cryptsy.com/users/dashboard): `93c94927ce29eebbb9f6aa6db5ca3fb6f164e97e`
+    
+3. Make sure you have some coins in your Cryptsy account. They don't currently support exchanging for USD, so you'll have to acquire them somewhere else.
 
-3. [Turn on the API](https://www.cryptsy.com/users/settings) for your Cryptsy account and grab your public and private keys. 
+4. [Turn on the API](https://www.cryptsy.com/users/settings) for your Cryptsy account and grab your public and private keys. 
 
-4. Optional: Set your `CRYPTSY_PUBLIC_KEY` and `CRYPTSY_PRIVATE_KEY` environment variables to the appropriate values
+5. Optional: Set your `CRYPTSY_PUBLIC_KEY` and `CRYPTSY_PRIVATE_KEY` environment variables to the appropriate values
 
-5. Run `coin-allocator` with your desired allocation. For example, this would give a 60/40 BTC/LTC split: `coin-allocator --allocation.BTC 60 --allocation.LTC 40 --public-key a1b2c3... --private-key d1e2f3...` (Omit the keys if your already stored them in environment variables.) 
+6. Run `coin-allocator` with your desired allocation. For example, this would give a 60/40 BTC/LTC split: `coin-allocator --allocation.BTC 60 --allocation.LTC 40 --public-key a1b2c3... --private-key d1e2f3...` (Omit the keys if your already stored them in environment variables.) 
 
 That's it! It should read your account balances and the current market rates and suggest a set of trades to re-balance your account. You will then have to type 'yes' for it to execute the suggested trades.
 
@@ -44,10 +46,9 @@ Todo
 ----
 
 * Support minimum threshold in percentage points off of target
-* Make the exchange provide subclasses of the Trade & TradeSet objects, make them perform validation at creation time
+* Make the exchange classes provide subclasses of the Trade & TradeSet objects, make them perform validation at creation time
 * Figure out minimum exchange amounts (scrape? tiny fake transactions?)
 * Make Trade Objects throw on creation if amount is below minimum exchange amount
-* Set up live instance to rebalance my account
 * Better error for bogus / unsupported currencies
 * Support A->B->C paths even when B is not a requested currency
 * Add support for BTC-e (and other exchanges?)
