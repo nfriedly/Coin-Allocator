@@ -26,14 +26,15 @@ function CoinAllocator(options) {
 }
 
 // todo: consider moving this to a different file
+// todo: rename this to just "sum" since it works on both arrays and objects
 CoinAllocator.sumObject = function(obj) {
     return _.reduce(obj, function(sum, num) {
         return sum + num;
-    });
+    }, 0);
 };
 
 
-CoinAllocator.getTradeGains = function(status, cb) {
+CoinAllocator.prototype.getTradeGains = function(status, cb) {
     // per-currency gains: 
     // lookup deposits & withdrawals in selected currencies
     // lookup trades between selected currencies & non-selected currencies and treat them as additional deposits / withdrawls
@@ -44,21 +45,79 @@ CoinAllocator.getTradeGains = function(status, cb) {
     // convert totals into primary currency at current rate
     // combine totals into all deposits and all withdrawals
     // calculate current balance in primary currency
-    // calculate overall trade gain = (current balance + withdrawls - deposits) / deposits
+    // calculate overall trade gain = (current balance + withdrawals - deposits) / deposits
     var self = this;
     async.series({ // because of nonces, cryptsy's API sometimes chokes if we execute a second request before the first one completes
         transactions: function(cb) {
-            self.exchange.getTransactionHistory(self.currencies, cb);
+            self.exchange.getTransactionHistory(cb);
         },
         trades: function(cb) {
-            self.exchange.getTradehistory(self.currencies, cb);
+            self.exchange.getTradeHistory(cb);
         }
     }, function(err, results) {
         if (err) return cb(err);
+        // results.transactions looks like {deposits: [], withdrawals: []}
+        var transactions = _.mapValues(results.transactions, function(transactions) {
+            return _.groupBy(transactions, function(transaction) {
+                return transaction.currency;
+            });
+        });
 
+        // a map of currencies we care about for quick lookups
+        var tracking = _.mapValues(self.allocation, function() {
+            return true;
+        });
 
-        cb(null, {});
-        return results;
+        // add an empty list if we didn't have any deposits/withdrawals in a given currency
+        _.each(tracking, function(t, currency) {
+            transactions.deposits[currency] = transactions.deposits[currency] || [];
+            transactions.withdrawals[currency] = transactions.withdrawals[currency] || [];
+        });
+
+        _(results.trades).each(function(trade) {
+            if (tracking[trade.toCurrency] && !tracking[trade.fromCurrency]) {
+                // trades to a currency that we're tracking & from a currency that we're not tracking count as a deposit
+                transactions.deposits[trade.toCurrency].push({
+                    amount: trade.toAmount
+                });
+            } else if (tracking[trade.fromCurrency] && !tracking[trade.toCurrency]) {
+                // trades from a currency that we're tracking & to a currency that we're not tracking count as a withdrawal
+                transactions.withdrawals[trade.fromCurrency].push({
+                    amount: trade.fromAmount
+                });
+            }
+        });
+
+        function sumTransactions(transactions) {
+            return _.reduce(transactions, function(sum, trans) {
+                return sum + parseFloat(trans.amount);
+            }, 0);
+        }
+
+        var totals = _.mapValues(transactions, function(transactionsByCurrency /* lists of deposits or withdrawals, grouped by currency*/ ) {
+            return _.mapValues(transactionsByCurrency, sumTransactions);
+        });
+
+        /*
+        var gainsByCurrency = _.mapValues(status.balances, function(balance, currency) {
+            return ((balance + totals.withdrawals[currency] - totals.deposits[currency]) / totals.deposits[currency] * 100).toFixed(2);
+        });
+        */
+
+        /* returns {deposits: #, withdrawals: #} where # is the sum of all transactions of that type, converted to the primary currency at current values */
+        var totalsInPrimary = _.mapValues(totals, function(transactionsByCurrency, type /* deposit or withdrawal*/ ) {
+            var totalsInPrimaryByCurrency = self.getBalancesInPrimary(self.primaryCurrency, status.markets, transactionsByCurrency);
+            var sumInPrimary = CoinAllocator.sumObject(totalsInPrimaryByCurrency);
+            console.log('totals in primary: ', type, transactionsByCurrency, totalsInPrimaryByCurrency, sumInPrimary);
+            return sumInPrimary;
+        });
+
+        var balancesInPrimary = self.getBalancesInPrimary(self.primaryCurrency, status.markets, status.balances);
+        var balanceInPrimary = CoinAllocator.sumObject(balancesInPrimary);
+
+        var overallGains = (balanceInPrimary + totalsInPrimary.withdrawals - totalsInPrimary.deposits) / totalsInPrimary.deposits;
+
+        cb(null, overallGains);
     });
 };
 

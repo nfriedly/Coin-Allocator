@@ -53,6 +53,5 @@ Todo
 * Add support for BTC-e (and other exchanges?)
 * Calculate Amount lost to fees with a given trade set
 * Calculate expected balances after a trade set is executed
-* Calculate total gained over time (perhaps belongs outside of this library?)
 * Split optimizer (& tests) into separate file
 * Figure out better names for executing/executed/orderProgress events - maybe order/progress/trade?

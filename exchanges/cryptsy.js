@@ -217,6 +217,7 @@ Cryptsy.prototype.convertTradeToOrder = function(markets, trade) {
     }
 };
 
+// todo: just split these into two groups: withdrawals & deposits, don't mess with negative amounts
 Cryptsy.prototype.getTransactionHistory = function(cb) {
     var cryptsy = this;
     this._getMarkets(function(err) {
@@ -224,29 +225,49 @@ Cryptsy.prototype.getTransactionHistory = function(cb) {
         cryptsy.api('mytransactions', null, function(err, data) {
             if (err) return cb(err);
 
-            var transactionHistory = _.chain(data['return']).map(function(trans) {
-                if (trans.type == 'Withdrawal') {
-                    trans.amount = -trans.amount;
-                }
-            }).map(_.pick.bind(_, ['timestamp', 'currency', 'amount']))
+            // group transactions into deposits and withdrawals, then strip out some of the extra data
+            var groupedTransactions = _.chain(data).groupBy(function(trans) {
+                return trans.type.toLowerCase() + 's';
+            }).mapValues(function(group) {
+                return _.map(group, function(trans) {
+                    return _.pick(trans, ['timestamp', 'currency', 'amount']);
+                });
+            })
                 .value();
 
-            cb(transactionHistory);
+            cb(null, groupedTransactions);
         });
     });
 };
 
-Cryptsy.prototype.getTradehistory = function(cb) {
+Cryptsy.prototype.getTradeHistory = function(cb) {
     var cryptsy = this;
     this._getMarkets(function(err, markets) {
         cryptsy.api('allmytrades', null, function(err, data) {
             if (err) return cb(err);
-            var trades = data['return'].map(function(trade) {
-                var market = markets[trade.marketid];
+
+            /** example:
+                data = [ { tradeid: '22839275',
+                    tradetype: 'Sell',
+                    datetime: '2014-02-11 08:34:23',
+                    marketid: '132',
+                    tradeprice: '0.00000232',
+                    quantity: '222.09331843',
+                    fee: '0.000001550',
+                    total: '0.00051526',
+                    initiate_ordertype: 'Sell',
+                    order_id: '41092864' }];
+            **/
+
+            var trades = _.map(data, function(trade) {
+                var market = _.findWhere(markets, {
+                    marketid: trade.marketid
+                });
                 var ret = {
                     feeAmount: trade.fee,
                     feeCurrency: market.secondary_currency_code
                 };
+                // todo: double-check that these amounts don't include fees
                 if (trade.tradetype == "Buy") {
                     ret.fromCurrency = market.secondary_currency_code;
                     ret.toCurrency = market.primary_currency_code;
@@ -258,8 +279,9 @@ Cryptsy.prototype.getTradehistory = function(cb) {
                     ret.fromAmount = trade.total;
                     ret.toAmount = trade.quantity;
                 } else {
-                    cb(new Error('Unrecognized trade type in history: ' + JSON.stringify(trade)));
+                    return cb(new Error('Unrecognized trade type in history: ' + JSON.stringify(trade)));
                 }
+                return ret;
             });
             cb(null, trades);
         });

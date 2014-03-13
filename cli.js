@@ -18,6 +18,7 @@
 var readline = require('readline');
 var util = require('util');
 var _ = require('lodash');
+var async = require('async');
 
 var CoinAllocator = require('./CoinAllocator.js');
 
@@ -59,7 +60,15 @@ var ca = new CoinAllocator({
 
 
 console.log('fetching data...');
-ca.getStatus(function(err, status) {
+
+async.auto({
+    status: ca.getStatus.bind(ca),
+    gains: ['status',
+        function(callback, results) {
+            ca.getTradeGains(results.status, callback);
+        }
+    ]
+}, function(err, results) {
     if (err) {
         if (_.contains(err.message, '<html>')) {
             console.error(err.message);
@@ -69,8 +78,10 @@ ca.getStatus(function(err, status) {
         console.error(err.stack || err);
         process.exit(1);
     }
-
+    var status = results.status;
+    var gains = results.gains;
     console.log("Current balances:", status.balances);
+    console.log("Overall gain due to trading: %s%", (gains * 100).toFixed(2));
     console.log("Current allocation (%):", status.allocation);
     console.log("Target after rebalancing:", status.targetBalances);
     var suggestedTrades = ca.getSuggestedTrades(status);
