@@ -12,7 +12,7 @@ var util = require('util');
 var _ = require('lodash');
 var async = require('async');
 var Table = require('cli-table');
-var colors = require('colors');
+require('colors'); // this one just mucks with String.prototype. :(
 
 var CoinAllocator = require('./CoinAllocator.js');
 
@@ -100,11 +100,11 @@ async.auto(steps, function(err, results) {
             // row is now an array of [0: currency, 1: balance, 2: %, 3: target balance, 4: target %]
             return [
                 row[0],
-                row[1].toFixed(8), 
+                row[1].toFixed(8),
                 row[2].toFixed(2),
-                row[3].toFixed(8), 
+                row[3].toFixed(8),
                 row[4].toFixed(2),
-            ]
+            ];
         })
         .value();
 
@@ -113,17 +113,19 @@ async.auto(steps, function(err, results) {
     var statusTable = new Table({
         head: ['Currency', 'Current Allocation', '(%)', 'Target Allocation', '(%)'],
         colAligns: ['left', 'right', 'right', 'right', 'right'],
-        style: {head: ['cyan']}
+        style: {
+            head: ['cyan']
+        }
     });
 
     // table is an Array, so you can `push`, `unshift`, `splice` and friends
     statusTable.push.apply(statusTable, rows);
 
     console.log(statusTable.toString());
-    
-    
+
+
     if (gains) {
-        console.log("Overall gain due to trading: %s%"[gains > 0 ? 'green' : 'red'], (gains * 100).toFixed(2));
+        console.log("Overall gain due to trading: %s%" [gains > 0 ? 'green' : 'red'], (gains * 100).toFixed(2));
     }
 
 
@@ -132,10 +134,12 @@ async.auto(steps, function(err, results) {
         console.log('\nNo trades recommended at this time.\n');
         process.exit();
     }
-    
+
     var suggestedTradesTable = new Table({
         head: ['Suggested Trades'],
-        style: {head: ['cyan']}
+        style: {
+            head: ['cyan']
+        }
     });
     suggestedTrades.getTrades().forEach(function(trade) {
         suggestedTradesTable.push([util.format("%s %s => %s", trade.getAmount(), trade.getFrom(), trade.getTo())]);
