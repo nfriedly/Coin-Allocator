@@ -55,3 +55,4 @@ Todo
 * Calculate expected balances after a trade set is executed
 * Split optimizer (& tests) into separate file
 * Figure out better names for executing/executed/orderProgress events - maybe order/progress/trade?
+* Add some tests around gains computations

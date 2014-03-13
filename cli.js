@@ -11,6 +11,8 @@ var readline = require('readline');
 var util = require('util');
 var _ = require('lodash');
 var async = require('async');
+var Table = require('cli-table');
+var colors = require('colors');
 
 var CoinAllocator = require('./CoinAllocator.js');
 
@@ -83,18 +85,63 @@ async.auto(steps, function(err, results) {
     }
     var status = results.status;
     var gains = results.gains;
-    console.log("Current balances:", status.balances);
+    var rows = _.chain(_.zip(
+        _.pairs(status.balances), // ex: [['BTC', 1], ['LTC', 2]]
+        _.pairs(status.allocation), // ex: [['BTC', 50], ['LTC', 50]]
+        _.pairs(status.targetBalances),
+        _.pairs(argv.allocation)
+    ))
+        .map(function(row) {
+            // in theory, I should be able to call these with _.invoke, but it doesn't seem to receive the correct value
+            return _.chain(row).flatten().unique().value();
+        })
+        .map(function(row) {
+            // row is now an array of [0: currency, 1: balance, 2: %, 3: target balance, 4: target %]
+            return [
+                row[0],
+                row[1].toFixed(8), 
+                row[2].toFixed(2),
+                row[3].toFixed(8), 
+                row[4].toFixed(2),
+            ]
+        })
+        .value();
+
+
+    // instantiate
+    var statusTable = new Table({
+        head: ['Currency', 'Current Allocation', '(%)', 'Target Allocation', '(%)'],
+        colAligns: ['left', 'right', 'right', 'right', 'right'],
+        style: {head: ['cyan']}
+    });
+
+    // table is an Array, so you can `push`, `unshift`, `splice` and friends
+    statusTable.push.apply(statusTable, rows);
+
+    console.log(statusTable.toString());
+    
+    
     if (gains) {
-        console.log("Overall gain due to trading: %s%", (gains * 100).toFixed(2));
+        console.log("Overall gain due to trading: %s%"[gains > 0 ? 'green' : 'red'], (gains * 100).toFixed(2));
     }
-    console.log("Current allocation (%):", status.allocation);
-    console.log("Target after rebalancing:", status.targetBalances);
+
+
     var suggestedTrades = ca.getSuggestedTrades(status);
     if (!suggestedTrades.getTrades().length) {
         console.log('\nNo trades recommended at this time.\n');
         process.exit();
     }
-    console.log("Suggested trades:\n", suggestedTrades.toString());
+    
+    var suggestedTradesTable = new Table({
+        head: ['Suggested Trades'],
+        style: {head: ['cyan']}
+    });
+    suggestedTrades.getTrades().forEach(function(trade) {
+        suggestedTradesTable.push([util.format("%s %s => %s", trade.getAmount(), trade.getFrom(), trade.getTo())]);
+    });
+    console.log(suggestedTradesTable.toString());
+
+
 
     var ordersOpen = false;
 
@@ -124,7 +171,7 @@ async.auto(steps, function(err, results) {
         if (response == 'yes') { // not sure why node wraps parenthesis around the command...
             ordersOpen = true;
             var error = false;
-            console.log('Executing, press control-c to cancel and kill any outstanding orders');
+            console.log('\nExecuting, press control-c to cancel and kill any outstanding orders');
             var i = 0;
             var spinEls = ['-', '\\', '|', '/'];
             ca.executeTrades(suggestedTrades)
