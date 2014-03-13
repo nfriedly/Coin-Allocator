@@ -38,7 +38,7 @@ var argv = require('yargs')
             alias: 'y'
         },
         'compute-gains': {
-            describe: 'Computes the overal % gain on your trades. May be time-intensive, so setting -g 0 will skip it.',
+            describe: 'Computes the overal % gain on your trades. May be time-intensive, so setting -g 0 (or --no-compute-gains) will skip it.',
             alias: 'g',
             boolean: undefined,
             default: true
@@ -59,7 +59,7 @@ var ca = new CoinAllocator({
 });
 
 
-console.log('fetching data...');
+console.log('fetching current data...');
 
 var steps = {
     status: ca.getStatus.bind(ca),
@@ -68,6 +68,7 @@ var steps = {
 if (argv['compute-gains']) {
     steps.gains = ['status',
         function(callback, results) {
+            console.log('fetching history to compute gains...');
             ca.getTradeGains(results.status, callback);
         }
     ];

@@ -42,7 +42,6 @@ Tips:
 Todo
 ----
 
-* Clean up logging output to have less syntax and less-arbitrary line breaks
 * Support minimum threshold in percentage points off of target
 * Make the exchange provide subclasses of the Trade & TradeSet objects, make them perform validation at creation time
 * Figure out minimum exchange amounts (scrape? tiny fake transactions?)
