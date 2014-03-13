@@ -1,6 +1,6 @@
 {
   "name": "coin-allocator",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Tool to automatically rebalance various cryptoins via the cryptsy API",
   "main": "index.js",
   "scripts": {
