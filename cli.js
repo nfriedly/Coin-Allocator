@@ -37,9 +37,13 @@ var argv = require('yargs')
             describe: 'Automatically execute the suggested trades without asking for confirmation',
             alias: 'y'
         },
+        trade: {
+            describe: 'Set the --no-trade flag to prevent Coin Allocator from offering to execute suggested trades. Not compatible with the --yes option.',
+            boolean: undefined,
+            default: true
+        },
         'compute-gains': {
-            describe: 'Computes the overal % gain on your trades. May be time-intensive, so setting -g 0 (or --no-compute-gains) will skip it.',
-            alias: 'g',
+            describe: 'Computes the overal % gain on your trades, enabled by default. May be time-intensive, so setting --no-compute-gains will skip it.',
             boolean: undefined,
             default: true
         }
@@ -48,6 +52,7 @@ var argv = require('yargs')
         argv.publicKey = argv['public-key'] || process.env.CRYPTSY_PUBLIC_KEY;
         argv.privateKey = argv['private-key'] || process.env.CRYPTSY_PRIVATE_KEY;
         if (!argv.publicKey || !argv.privateKey) throw 'CRYPTSY_PUBLIC_KEY and CRYPTSY_PRIVATE_KEY env vars must be set';
+        if(argv.yes && !argv.trade) throw '--yes and --no-trade are mutually exclusive';
     })
     .argv;
 
@@ -122,10 +127,11 @@ async.auto(steps, function(err, results) {
     statusTable.push.apply(statusTable, rows);
 
     console.log(statusTable.toString());
+    console.log('Current Allocation % is based on each currencie\'s value in %s.', argv.primary);
 
 
     if (gains) {
-        console.log("Overall gain due to trading: %s%" [gains > 0 ? 'green' : 'red'], (gains * 100).toFixed(2));
+        console.log("\nOverall gain due to trading: %s%" [gains > 0 ? 'green' : 'red'], (gains * 100).toFixed(2));
     }
 
 
@@ -146,7 +152,10 @@ async.auto(steps, function(err, results) {
     });
     console.log(suggestedTradesTable.toString());
 
-
+    // if the --no-trade flag was set, then stop here.
+    if(!argv.trade) {
+        process.exit(0);
+    }
 
     var ordersOpen = false;
 
