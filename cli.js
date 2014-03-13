@@ -4,14 +4,6 @@
  * CLI Interface for Coin Allocator
  *
  * Todo:
- *  - Build proper CLI with optimist or the like
- *  - add --help command
- *  - require allocation targets from command line
- *  - require primary currency from command line
- *  - accept keys from cli in addition to env
- *  - add --no-execute option to suggest trades and exit
- *  - ask before making trades
- *  - add --yes option automatically make the trades without asking
  *  - (eventually) add --exchange param
  */
 
@@ -42,6 +34,12 @@ var argv = require('yargs')
         yes: {
             describe: 'Automatically execute the suggested trades without asking for confirmation',
             alias: 'y'
+        },
+        'compute-gains': {
+            describe: 'Computes the overal % gain on your trades. May be time-intensive, so setting -g 0 will skip it.',
+            alias: 'g',
+            boolean: undefined,
+            default: true
         }
     })
     .check(function(argv) {
@@ -61,14 +59,19 @@ var ca = new CoinAllocator({
 
 console.log('fetching data...');
 
-async.auto({
+var steps = {
     status: ca.getStatus.bind(ca),
-    gains: ['status',
+};
+
+if (argv['compute-gains']) {
+    steps.gains = ['status',
         function(callback, results) {
             ca.getTradeGains(results.status, callback);
         }
-    ]
-}, function(err, results) {
+    ];
+}
+
+async.auto(steps, function(err, results) {
     if (err) {
         if (_.contains(err.message, '<html>')) {
             console.error(err.message);
@@ -81,7 +84,9 @@ async.auto({
     var status = results.status;
     var gains = results.gains;
     console.log("Current balances:", status.balances);
-    console.log("Overall gain due to trading: %s%", (gains * 100).toFixed(2));
+    if (gains) {
+        console.log("Overall gain due to trading: %s%", (gains * 100).toFixed(2));
+    }
     console.log("Current allocation (%):", status.allocation);
     console.log("Target after rebalancing:", status.targetBalances);
     var suggestedTrades = ca.getSuggestedTrades(status);
