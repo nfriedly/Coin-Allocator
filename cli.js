@@ -50,6 +50,11 @@ var argv = require('yargs')
             describe: 'Computes the overal % gain on your trades, enabled by default. May be time-intensive, so setting --no-compute-gains will skip it.',
             boolean: undefined,
             default: true
+        },
+        format: {
+            describe: 'Set the --no-format flag to disable colors and tables in output. May be useful for automated systems.',
+            boolean: undefined,
+            default: true
         }
     })
     .check(function(argv) {
@@ -96,47 +101,66 @@ async.auto(steps, function(err, results) {
     }
     var status = results.status;
     var gains = results.gains;
-    var rows = _.chain(_.zip(
-        _.pairs(status.balances), // ex: [['BTC', 1], ['LTC', 2]]
-        _.pairs(status.allocation), // ex: [['BTC', 50], ['LTC', 50]]
-        _.pairs(status.targetBalances),
-        _.pairs(argv.allocation)
-    ))
-        .map(function(row) {
-            // in theory, I should be able to call these with _.invoke, but it doesn't seem to receive the correct value
-            return _.chain(row).flatten().unique().value();
-        })
-        .map(function(row) {
-            // row is now an array of [0: currency, 1: balance, 2: %, 3: target balance, 4: target %]
-            return [
-                row[0],
-                row[1].toFixed(8),
-                row[2].toFixed(2),
-                row[3].toFixed(8),
-                row[4].toFixed(2),
-            ];
-        })
-        .value();
+
+    if (argv.format) {
+        var rows = _.chain(_.zip(
+            _.pairs(status.balances), // ex: [['BTC', 1], ['LTC', 2]]
+            _.pairs(status.allocation), // ex: [['BTC', 50], ['LTC', 50]]
+            _.pairs(status.targetBalances),
+            _.pairs(argv.allocation)
+        ))
+            .map(function(row) {
+                // in theory, I should be able to call these with _.invoke, but it doesn't seem to receive the correct value
+                return _.chain(row).flatten().unique().value();
+            })
+            .map(function(row) {
+                // row is now an array of [0: currency, 1: balance, 2: %, 3: target balance, 4: target %]
+                return [
+                    row[0],
+                    row[1].toFixed(8),
+                    row[2].toFixed(2),
+                    row[3].toFixed(8),
+                    row[4].toFixed(2),
+                ];
+            })
+            .value();
 
 
-    // instantiate
-    var statusTable = new Table({
-        head: ['Currency', 'Current Allocation', '(%)', 'Target Allocation', '(%)'],
-        colAligns: ['left', 'right', 'right', 'right', 'right'],
-        style: {
-            head: ['cyan']
-        }
-    });
+        // instantiate
+        var statusTable = new Table({
+            head: ['Currency', 'Current Allocation', '(%)', 'Target Allocation', '(%)'],
+            colAligns: ['left', 'right', 'right', 'right', 'right'],
+            style: {
+                head: ['cyan']
+            }
+        });
 
-    // table is an Array, so you can `push`, `unshift`, `splice` and friends
-    statusTable.push.apply(statusTable, rows);
+        // table is an Array, so you can `push`, `unshift`, `splice` and friends
+        statusTable.push.apply(statusTable, rows);
 
-    console.log(statusTable.toString());
-    console.log('Current Allocation % is based on each currencie\'s value in %s.', argv.primary);
+        console.log(statusTable.toString());
+        console.log('Current Allocation % is based on each currencie\'s value in %s.', argv.primary);
 
 
+    } else {
+        var json = _.pick(status, ['balances', 'allocation', 'targetBalances']);
+        json.balances = _.mapValues(json.balances, function(num) {
+            return num.toFixed(8);
+        });
+        json.allocation = _.mapValues(json.allocation, function(num) {
+            return num.toFixed(2) + '%';
+        });
+        json.targetBalances = _.mapValues(json.targetBalances, function(num) {
+            return num.toFixed(8);
+        });
+        console.log('Current Status: %j', json);
+    }
     if (gains) {
-        console.log("\nOverall gain due to trading: %s%" [gains > 0 ? 'green' : 'red'], (gains * 100).toFixed(2));
+        var msg = "\nOverall gain due to trading: %s%";
+        if (argv.format) {
+            msg = msg[gains > 0 ? 'green' : 'red'];
+        }
+        console.log(msg, (gains * 100).toFixed(2));
     }
 
 
@@ -146,16 +170,20 @@ async.auto(steps, function(err, results) {
         process.exit();
     }
 
-    var suggestedTradesTable = new Table({
-        head: ['Suggested Trades'],
-        style: {
-            head: ['cyan']
-        }
-    });
-    suggestedTrades.getTrades().forEach(function(trade) {
-        suggestedTradesTable.push([util.format("%s %s => %s", trade.getAmount(), trade.getFrom(), trade.getTo())]);
-    });
-    console.log(suggestedTradesTable.toString());
+    if (argv.format) {
+        var suggestedTradesTable = new Table({
+            head: ['Suggested Trades'],
+            style: {
+                head: ['cyan']
+            }
+        });
+        suggestedTrades.getTrades().forEach(function(trade) {
+            suggestedTradesTable.push([util.format("%s %s => %s", trade.getAmount(), trade.getFrom(), trade.getTo())]);
+        });
+        console.log(suggestedTradesTable.toString());
+    } else {
+        console.log('Suggested Trades: ', suggestedTrades.toString());
+    }
 
     // if the --no-trade flag was set, then stop here.
     if (!argv.trade) {
