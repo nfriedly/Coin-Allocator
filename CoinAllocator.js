@@ -346,16 +346,20 @@ CoinAllocator.prototype.optimizeTrades = function(primaryCurrency, markets, bala
 
 var MINIMUM_BTC_SIZE = parseFloat('1.0e-8');
 
-CoinAllocator.prototype.removeTradesBelowThreshold = function(tradeSet, targetBalances, threshold) {
+CoinAllocator.prototype.removeTradesBelowThreshold = function(tradeSet, threshold, status) {
+    var balancesInPrimary = this.getBalancesInPrimary(this.primaryCurrency, status.markets, status.balances);
+    var totalInPrimary = CoinAllocator.sumObject(balancesInPrimary);
+
     var trades = tradeSet.getTrades();
 
+    var self = this;
     var filteredTrades = _.filter(trades, function(trade) {
         var amount = parseFloat(trade.getAmount());
         // todo: find market minimum trade amounts for each currency and use that instead
         if (amount < MINIMUM_BTC_SIZE) {
             return false;
         }
-        return (amount / targetBalances[trade.getTo()]) > threshold;
+        return (self.getRatio(self.primaryCurrency, status.markets, trade.getFrom()) * amount / totalInPrimary) > threshold;
     });
 
     return new TradeSet(filteredTrades);
@@ -364,7 +368,8 @@ CoinAllocator.prototype.removeTradesBelowThreshold = function(tradeSet, targetBa
 CoinAllocator.prototype.getSuggestedTrades = function(status) {
     var baselineSuggestedtrades = this.getBaselineSuggestedTrades(this.primaryCurrency, status.markets, status.balances, status.targetBalances);
     var optimizedTrades = this.optimizeTrades(this.primaryCurrency, status.markets, status.balances, status.targetBalances, this.threshold, baselineSuggestedtrades);
-    return this.removeTradesBelowThreshold(optimizedTrades, status.targetBalances, this.threshold);
+
+    return this.removeTradesBelowThreshold(optimizedTrades, this.threshold, status);
 };
 
 CoinAllocator.prototype.executeTrades = function(trades, cb) {

@@ -33,6 +33,10 @@ var argv = require('yargs')
             describe: 'Add `--allocation.SYMBOL %` for each currency you want. Ex: `--allocation.BTC 30` for 30% BTC',
             demand: 'At least one --allocation.SYMBOL % argument is required. For example, `--allocation.BTC 60 --allocation.LTC 40` for a 60%/40% split between BTC and LTC,'
         },
+        threshold: {
+            describe: 'Number of percentage points a currency can be off target by before a trade is suggested.',
+            default: 1
+        },
         yes: {
             describe: 'Automatically execute the suggested trades without asking for confirmation',
             alias: 'y'
@@ -60,7 +64,8 @@ var ca = new CoinAllocator({
     allocation: argv.allocation,
     primaryCurrency: argv.primary,
     publicKey: argv.publicKey,
-    privateKey: argv.privateKey
+    privateKey: argv.privateKey,
+    threshold: argv.threshold
 });
 
 
