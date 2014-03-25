@@ -110,8 +110,15 @@ async.auto(steps, function(err, results) {
             _.pairs(argv.allocation)
         ))
             .map(function(row) {
-                // in theory, I should be able to call these with _.invoke, but it doesn't seem to receive the correct value
-                return _.chain(row).flatten().unique().value();
+                // row is an array of arrays, each one containing coin symbol and a value.
+                // we want the symbol to appear once and then just take the values after that
+                // this works, because reduce uses the first value as the memo/accumulator 
+                // - so it keeps it's symbol but everything else just gets the second param 
+                // plucked out and added to the memo
+                return _.reduce(row, function(memo, pair) {
+                    memo.push(pair[1]);
+                    return memo;
+                });
             })
             .map(function(row) {
                 // row is now an array of [0: currency, 1: balance, 2: %, 3: target balance, 4: target %]
