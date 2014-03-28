@@ -127,7 +127,13 @@ CoinAllocator.prototype.getRatio = function(targetCurrency, markets, currency) {
     if (markets[currency] && markets[currency][targetCurrency]) {
         return markets[currency][targetCurrency].ratio;
     }
-    throw new Error(util.format('Unable to directly convert %s to %s, no market found', currency, targetCurrency));
+    var intermediateCurrency = _.find(_.keys(markets[currency]), function(intermediate) {
+        return markets[intermediate][targetCurrency] ? intermediate : false;
+    });
+    if (intermediateCurrency) {
+        return markets[currency][intermediateCurrency].ratio * markets[intermediateCurrency][targetCurrency].ratio;
+    }
+    throw new Error(util.format('Unable to convert %s to %s, no direct or intermediate market found', currency, targetCurrency));
 };
 
 CoinAllocator.prototype.getBalancesInPrimary = function(primaryCurrency, markets, balances) {
@@ -277,6 +283,7 @@ CoinAllocator.prototype.getBaselineSuggestedTrades = function(primaryCurrency, m
  * Recursively calls itself until it can no longer find any improvements to make, then returns the resulting trade set.
  */
 CoinAllocator.prototype.optimizeTrades = function(primaryCurrency, markets, balances, targetBalances, threshold, tradeSet) {
+    var ca = this;
     var trades = tradeSet.getTrades();
     var groupedTrades = _.groupBy(trades, function(trade) {
         if (trade.getFrom() == primaryCurrency) {
@@ -296,8 +303,8 @@ CoinAllocator.prototype.optimizeTrades = function(primaryCurrency, markets, bala
         return b.amount - a.amount;
     });
     sells.sort(function(a, b) {
-        var aAmountInPrimary = a.getAmount() * markets[a.getFrom()][primaryCurrency].ratio;
-        var bAmountInPrimary = b.getAmount() * markets[b.getFrom()][primaryCurrency].ratio;
+        var aAmountInPrimary = a.getAmount() * ca.getRatio(primaryCurrency, markets, a.getFrom());
+        var bAmountInPrimary = b.getAmount() * ca.getRatio(primaryCurrency, markets, b.getFrom());
         return bAmountInPrimary - aAmountInPrimary;
     });
 
