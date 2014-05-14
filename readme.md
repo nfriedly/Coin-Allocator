@@ -45,15 +45,55 @@ Tips:
 Todo
 ----
 
-* Support minimum threshold in percentage points off of target
+* Better organize core code
 * Make the exchange classes provide subclasses of the Trade & TradeSet objects, make them perform validation at creation time
-* Figure out minimum exchange amounts (scrape? tiny fake transactions?)
 * Make Trade Objects throw on creation if amount is below minimum exchange amount
 * Better error for bogus / unsupported currencies
-* Support A->B->C paths even when B is not a requested currency
+* Support arbitrary trade paths including through unrequested currencies if it provides a better value
 * Add support for BTC-e (and other exchanges?)
 * Calculate Amount lost to fees with a given trade set
 * Calculate expected balances after a trade set is executed
-* Split optimizer (& tests) into separate file
 * Figure out better names for executing/executed/orderProgress events - maybe order/progress/trade?
 * Add some tests around gains computations
+* grab market prices last to avoid working on outdated data
+* run all trades in parallel except for situations where that could hit a negative balance
+* add timeout option - kill trades not executed within timeout - default to 1 minute?
+
+
+
+
+Notes for arbitrary trade paths:
+
+1. for each currency, find its value in primary (no fees) 
+2. find values for target allocation 
+3. group currencies by above, below, and within threshold of target
+4. for each above/below currency pair, find best trade paths.
+5. compute trade ratio with fees.
+6. compute ratio if source and destination were in then each converted to primary currency (no fees)
+7. rank these by highest to lowest ratio
+8. trade until source or dest reach target, then go onto next path. 
+
+Step 1 details: get value: find best trade path, return ratio without fees. (memoize?)
+
+Step 3 details: find best trade path: recursive function:  given, destination, list of letters path so far (starting with source), max length.
+if last item = destination, return list.
+if list length = max length, return false.
+results set = for each currency that can be traded to from the last one in the list (excluding the one before it), call function with list + that cur
+filter results set to remove falses
+if empty, return false
+sort by trade ratio (with fees)
+return highest ratio trade path
+top-level: if false, throw. otherwise return path
+memoise.
+
+todo:
+- build a dependency graph for trades
+- combine like trades as long as it won't cause a negative balance (a->b + a->b)
+- combine equalizing trades (a->b + b->a)
+- look for other optimizations
+- begin executing trades in parallel, following graph
+- figure out recovery path if trade dies on some random non-traded currency - maybe an "auto-sell all others" option?
+
+
+
+

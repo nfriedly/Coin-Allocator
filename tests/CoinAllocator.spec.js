@@ -14,6 +14,7 @@ describe('CoinAllocator', function() {
     var coinAllocator;
     var markets;
     var balances;
+    var status;
 
     function setCurrenciesBtcDoge() {
         markets = {
@@ -33,6 +34,10 @@ describe('CoinAllocator', function() {
         balances = {
             BTC: 1,
             DOGE: 100
+        };
+        status = {
+            markets: markets,
+            balances: balances
         };
     }
 
@@ -56,6 +61,10 @@ describe('CoinAllocator', function() {
             fee: 0.003
         };
         balances.LTC = 10;
+        status = {
+            markets: markets,
+            balances: balances
+        };
     }
 
     beforeEach(function() {
@@ -505,5 +514,85 @@ describe('CoinAllocator', function() {
             expect(actual.toJSON()).toEqual(expected);
 
         });
+    });
+
+    /*
+    var MINIMUM_BTC_SIZE = parseFloat('1.0e-8');
+
+CoinAllocator.prototype.removeTradesBelowThreshold = function(tradeSet, threshold, status) {
+    var balancesInPrimary = this.getBalancesInPrimary(this.primaryCurrency, status.markets, status.balances);
+    var totalInPrimary = CoinAllocator.sumObject(balancesInPrimary);
+
+    var trades = tradeSet.getTrades();
+
+    var self = this;
+    var filteredTrades = _.filter(trades, function(trade) {
+        var amount = parseFloat(trade.getAmount());
+        // todo: find market minimum trade amounts for each currency and use that instead
+        if (amount < MINIMUM_BTC_SIZE) {
+            return false;
+        }
+        return (self.getRatio(self.primaryCurrency, status.markets, trade.getFrom()) * amount / totalInPrimary) > threshold;
+    });
+
+    return new TradeSet(filteredTrades);
+};
+    */
+
+    describe('removeTradesBelowThreshold', function() {
+
+        it('should allow valid trades', function() {
+            var trades = new TradeSet([
+                new Trade({
+                    "from": "DOGE",
+                    "amount": "1.00000000",
+                    "to": "BTC"
+                })
+            ]);
+
+            var actual = coinAllocator.removeTradesBelowThreshold(trades, 0, status);
+
+            var expected = [{
+                "from": "DOGE",
+                "amount": "1.00000000",
+                "to": "BTC"
+            }];
+
+            expect(actual.toJSON()).toEqual(expected);
+        });
+
+        it('should remove trades where the source amount is below the minimum threshold', function() {
+            var trades = new TradeSet([
+                new Trade({
+                    "from": "DOGE",
+                    "amount": "0.000000001", // there are 8 zeros here
+                    "to": "BTC"
+                })
+            ]);
+
+            var actual = coinAllocator.removeTradesBelowThreshold(trades, 0, status);
+
+            var expected = [];
+
+            expect(actual.toJSON()).toEqual(expected);
+        });
+
+        it('should remove trades where the destination amount is below the minimum threshold', function() {
+            var trades = new TradeSet([
+                new Trade({
+                    "from": "DOGE",
+                    "amount": "0.00000001", // 7 zeros here
+                    "to": "BTC"
+                })
+            ]);
+
+            var actual = coinAllocator.removeTradesBelowThreshold(trades, 0, status);
+
+            var expected = [];
+
+            expect(actual.toJSON()).toEqual(expected);
+        });
+
+        // todo: test the actual threshold
     });
 });

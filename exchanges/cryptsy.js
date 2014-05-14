@@ -69,6 +69,7 @@ Cryptsy.prototype.getMarkets = function(currencies, cb) {
     });
 };
 
+// todo: enforce this: Minimum order quantities have been removed. Only requirement now is that the order total > 0.00000010. Min fee for any order is 0.00000001
 Cryptsy.prototype.executeTrades = function(tradeSet) {
     var cryptsy = this;
     var tradeSetProgress = new EventEmitter();

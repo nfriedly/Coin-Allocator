@@ -351,7 +351,7 @@ CoinAllocator.prototype.optimizeTrades = function(primaryCurrency, markets, bala
     return changed ? this.optimizeTrades(primaryCurrency, markets, balances, targetBalances, threshold, new TradeSet(trades)) : tradeSet;
 };
 
-var MINIMUM_BTC_SIZE = parseFloat('1.0e-8');
+var MINIMUM_ORDER_SIZE = parseFloat('1.0e-7'); // todo: let the exchange define this - this is cryptsy's min, but BTC can actually be divided down to 1.0e-8;
 
 CoinAllocator.prototype.removeTradesBelowThreshold = function(tradeSet, threshold, status) {
     var balancesInPrimary = this.getBalancesInPrimary(this.primaryCurrency, status.markets, status.balances);
@@ -362,11 +362,11 @@ CoinAllocator.prototype.removeTradesBelowThreshold = function(tradeSet, threshol
     var self = this;
     var filteredTrades = _.filter(trades, function(trade) {
         var amount = parseFloat(trade.getAmount());
-        // todo: find market minimum trade amounts for each currency and use that instead
-        if (amount < MINIMUM_BTC_SIZE) {
+        var amountInPrimary = self.getRatio(self.primaryCurrency, status.markets, trade.getFrom()) * amount;
+        if (amount < MINIMUM_ORDER_SIZE || amountInPrimary < MINIMUM_ORDER_SIZE) {
             return false;
         }
-        return (self.getRatio(self.primaryCurrency, status.markets, trade.getFrom()) * amount / totalInPrimary) > threshold;
+        return (amountInPrimary / totalInPrimary) > threshold;
     });
 
     return new TradeSet(filteredTrades);
