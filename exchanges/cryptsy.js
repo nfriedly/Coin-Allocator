@@ -197,7 +197,7 @@ Cryptsy.prototype.convertTradeToOrder = function(markets, trade) {
             marketid: market.marketid,
             ordertype: 'Buy',
             // lasttradeprice is in the FROM currency, but quantity should be in the TO currency
-            quantity: (trade.getAmount() * market.last_trade).toFixed(8), // fees will make this take slightly more out of the FROM account
+            quantity: (trade.getAmount() / market.last_trade).toFixed(8), // fees will make this take slightly more out of the FROM account
             price: market.last_trade
         };
     } else {
