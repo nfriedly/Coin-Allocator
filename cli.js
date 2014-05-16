@@ -55,6 +55,11 @@ var argv = require('yargs')
             describe: 'Set the --no-format flag to disable colors and tables in output. May be useful for automated systems.',
             boolean: undefined,
             default: true
+        },
+        debug: {
+            description: 'Logs extra data to assist with debugging',
+            boolean: undefined,
+            default: false
         }
     })
     .check(function(argv) {
@@ -101,6 +106,10 @@ async.auto(steps, function(err, results) {
     }
     var status = results.status;
     var gains = results.gains;
+
+    if (argv.debug) {
+        console.log('status: ', JSON.stringify(results));
+    }
 
     if (argv.format) {
         var rows = _.chain(_.zip(
