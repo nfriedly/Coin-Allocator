@@ -22,7 +22,7 @@ Setup & Usage
 
     Optional: If already signed up for Cryptsy but would still like to give me credit*, you may enter the following trade key in the "I was referred by" section of the [dashboard](https://www.cryptsy.com/users/dashboard): `93c94927ce29eebbb9f6aa6db5ca3fb6f164e97e`
     
-3. Make sure you have some coins in your Cryptsy account. ~~They don't currently support exchanging for USD, so you'll have to acquire them somewhere else.~~ Cryptsy now supports USD, you'll just have to verify your account.
+3. Make sure you have some coins in your Cryptsy account. You can purchase them with USD on Cryptsy (requires verification), or acquire them elsewhere and transfer them in.
 
 4. [Turn on the API](https://www.cryptsy.com/users/settings) for your Cryptsy account and grab your public and private keys. 
 
