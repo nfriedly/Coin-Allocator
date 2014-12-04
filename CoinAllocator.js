@@ -191,29 +191,29 @@ CoinAllocator.prototype.getStatus = function(cb) {
  * new Trade({from: 'USD', amount: 5, to: 'BTC'});
  */
 function Trade(params) {
-    var from = params.from,
-        // bitcoin and friends can only be divided down to 8 decimal places. toFixed(8) rounds the amount if necessary and turns it into a string so that it doesn't get rendered as scientific notation
-        amount = (typeof params.amount == 'string') ? params.amount : params.amount.toFixed(8),
-        to = params.to;
-    this.getFrom = function() {
-        return from;
+        var from = params.from,
+            // bitcoin and friends can only be divided down to 8 decimal places. toFixed(8) rounds the amount if necessary and turns it into a string so that it doesn't get rendered as scientific notation
+            amount = (typeof params.amount == 'string') ? params.amount : params.amount.toFixed(8),
+            to = params.to;
+        this.getFrom = function() {
+            return from;
+        };
+        this.getAmount = function() {
+            return amount;
+        };
+        this.getTo = function() {
+            return to;
+        };
+    }
+    /*  Todo: see if I can find a better place to put these
+    Trade.prototype.getToAmountWithoutFees(markets) {
+        return this.getAmount() * markets[this.getFrom()][this.getTo()].ratio;
     };
-    this.getAmount = function() {
-        return amount;
+    Trade.prototype.getToAmountWithFees = function() {
+        var toAmount = this.getToAmountWithoutFees();
+        return toAmount - (toAmount * markets[this.getFrom()][this.getTo()].fee);
     };
-    this.getTo = function() {
-        return to;
-    };
-}
-/*  Todo: see if I can find a better place to put these
-Trade.prototype.getToAmountWithoutFees(markets) {
-    return this.getAmount() * markets[this.getFrom()][this.getTo()].ratio;
-};
-Trade.prototype.getToAmountWithFees = function() {
-    var toAmount = this.getToAmountWithoutFees();
-    return toAmount - (toAmount * markets[this.getFrom()][this.getTo()].fee);
-};
-*/
+    */
 Trade.prototype.toJSON = function() {
     return {
         from: this.getFrom(),
@@ -233,8 +233,8 @@ Trade.prototype.toString = function() {
  */
 function TradeSet(trades) {
     if (!_.every(trades, function(trade) {
-        return trade instanceof Trade;
-    })) {
+            return trade instanceof Trade;
+        })) {
         throw new Error('All elements passed to a TradeSet must be Trade objects');
     }
     trades = trades.slice(); // prevent changes to the source array from affecting the internal one

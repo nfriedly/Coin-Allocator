@@ -228,12 +228,12 @@ Cryptsy.prototype.getTransactionHistory = function(cb) {
 
             // group transactions into deposits and withdrawals, then strip out some of the extra data
             var groupedTransactions = _.chain(data).groupBy(function(trans) {
-                return trans.type.toLowerCase() + 's';
-            }).mapValues(function(group) {
-                return _.map(group, function(trans) {
-                    return _.pick(trans, ['timestamp', 'currency', 'amount']);
-                });
-            })
+                    return trans.type.toLowerCase() + 's';
+                }).mapValues(function(group) {
+                    return _.map(group, function(trans) {
+                        return _.pick(trans, ['timestamp', 'currency', 'amount']);
+                    });
+                })
                 .value();
 
             cb(null, groupedTransactions);

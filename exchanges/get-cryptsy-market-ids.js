@@ -12,8 +12,8 @@ request('http://pubapi.cryptsy.com/api.php?method=marketdatav2', function(error,
             var json = JSON.parse(body);
             var markets = json['return'].markets;
             var marketIds = _.map(markets, function(market) {
-                return _.pick(market, ["label", "marketid", "primaryname", "primarycode", "secondaryname", "secondarycode"]);
-            })
+                    return _.pick(market, ["label", "marketid", "primaryname", "primarycode", "secondaryname", "secondarycode"]);
+                })
                 .sort(function(a, b) {
                     return a.marketid - b.marketid;
                 });
