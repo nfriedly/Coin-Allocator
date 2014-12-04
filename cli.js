@@ -78,12 +78,21 @@ var ca = new CoinAllocator({
     threshold: argv.threshold
 });
 
+if(argv.debug) {
+    console.log('v' + require('./package.json').version)
+}
 
 console.log('fetching current data...');
 
 var steps = {
-    status: ca.getStatus.bind(ca),
+    status: ca.getStatus.bind(ca)
 };
+
+if (argv.debug) {
+    steps.printStatus = ['status', function(err, results) {
+        console.dir(results);
+    }];
+}
 
 if (argv['compute-gains']) {
     steps.gains = ['status',
@@ -108,7 +117,7 @@ async.auto(steps, function(err, results) {
     var gains = results.gains;
 
     if (argv.debug) {
-        console.log('status: ', JSON.stringify(results));
+        console.log('status: ', util.inspect(results));
     }
 
     if (argv.format) {
@@ -121,8 +130,8 @@ async.auto(steps, function(err, results) {
             .map(function(row) {
                 // row is an array of arrays, each one containing coin symbol and a value.
                 // we want the symbol to appear once and then just take the values after that
-                // this works, because reduce uses the first value as the memo/accumulator 
-                // - so it keeps it's symbol but everything else just gets the second param 
+                // this works, because reduce uses the first value as the memo/accumulator
+                // - so it keeps it's symbol but everything else just gets the second param
                 // plucked out and added to the memo
                 return _.reduce(row, function(memo, pair) {
                     memo.push(pair[1]);

@@ -1,4 +1,4 @@
-/** 
+/**
  * Cryptsy API
  *
  * A quick wrapper around the existing Cryptsy npm module lib to generalize the source data.
@@ -52,7 +52,7 @@ Cryptsy.prototype.getMarkets = function(currencies, cb) {
             if (_.contains(currencies, market.primary_currency_code) && _.contains(currencies, market.secondary_currency_code)) {
                 markets[market.primary_currency_code] = markets[market.primary_currency_code] || {};
                 markets[market.primary_currency_code][market.secondary_currency_code] = {
-                    // for example, in the DOGE/BTC market, primary = DOGE, secondary = BTC, lasttradeprice = 0.00000262 
+                    // for example, in the DOGE/BTC market, primary = DOGE, secondary = BTC, lasttradeprice = 0.00000262
                     // this means that 1 DOGE buys you 0.00000262 BTC
                     ratio: +market.last_trade,
                     fee: +results.sellFee.fee
@@ -264,6 +264,9 @@ Cryptsy.prototype.getTradeHistory = function(cb) {
                 var market = _.findWhere(markets, {
                     marketid: trade.marketid
                 });
+                if (!market) {
+                    throw new Error('Unable to retrieve market ' + trade.marketid + ' for trade ' + util.inspect(trade));
+                }
                 var ret = {
                     feeAmount: trade.fee,
                     feeCurrency: market.secondary_currency_code
@@ -298,20 +301,20 @@ Cryptsy.prototype.validateTradeSet = function(tradeSet, cb) {
                 return cb(infoErr || marketsErr);
             }
             var curBalances = _.cloneDeep(info.balances_available);
-            var trades = 
+            var trades =
             var orders = _.map(tradeSet.getTrades(), _.bind(cryptsy.convertTradeToOrder, cryptsy, markets));
             var maxSimultaneousApiCalls = 4;
             async.mapLimit(orders, maxSimultaneousApiCalls, _.bind(cryptsy._getFees, cryptsy), function(err, fees) {
                 if (err) return cb(err);
-                
+
                 if (fees.length != tradeSet.getTrades().length) {
                     return cb(new Error(util.format("Unable to validate TradeSet, incorrect number of fees returned:\n\nTradeSet:\n%s\n\nFees:\n%s", tradeSet.toString(), JSON.stringify(fees))));
                 }
-                
+
                 orders.forEach(function(order, index) {
                     var fee = fees[index];
                     if (order.orderType == 'Buy') {
-                        
+
                     }
                 });
             });
