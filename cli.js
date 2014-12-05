@@ -47,9 +47,9 @@ var argv = require('yargs')
             default: true
         },
         'compute-gains': {
-            describe: 'Computes the overal % gain on your trades, enabled by default. May be time-intensive, so setting --no-compute-gains will skip it.',
+            describe: 'Computes the overall % gain on your trades. Disabled by default because it still contains some bugs',
             boolean: undefined,
-            default: true
+            default: false
         },
         format: {
             describe: 'Set the --no-format flag to disable colors and tables in output. May be useful for automated systems.',

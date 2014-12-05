@@ -21,14 +21,14 @@ Setup & Usage
 2. If you don't already have a Cryptsy account, please use this link* to sign up: https://www.cryptsy.com/users/register?refid=154285
 
     Optional: If already signed up for Cryptsy but would still like to give me credit*, you may enter the following trade key in the "I was referred by" section of the [dashboard](https://www.cryptsy.com/users/dashboard): `93c94927ce29eebbb9f6aa6db5ca3fb6f164e97e`
-    
+
 3. Make sure you have some coins in your Cryptsy account. You can purchase them with USD on Cryptsy (requires verification), or acquire them elsewhere and transfer them in.
 
-4. [Turn on the API](https://www.cryptsy.com/users/settings) for your Cryptsy account and grab your public and private keys. 
+4. [Turn on the API](https://www.cryptsy.com/users/settings) for your Cryptsy account and grab your public and private keys.
 
 5. Optional: Set your `CRYPTSY_PUBLIC_KEY` and `CRYPTSY_PRIVATE_KEY` environment variables to the appropriate values
 
-6. Run `coin-allocator` with your desired allocation. For example, this would give a 60/40 BTC/LTC split: `coin-allocator --allocation.BTC 60 --allocation.LTC 40 --public-key a1b2c3... --private-key d1e2f3...` (Omit the keys if your already stored them in environment variables.) 
+6. Run `coin-allocator` with your desired allocation. For example, this would give a 60/40 BTC/LTC split: `coin-allocator --allocation.BTC 60 --allocation.LTC 40 --public-key a1b2c3... --private-key d1e2f3...` (Omit the keys if your already stored them in environment variables.)
 
 That's it! It should read your account balances and the current market rates and suggest a set of trades to re-balance your account. You will then have to type 'yes' for it to execute the suggested trades.
 
@@ -45,6 +45,7 @@ Tips:
 Todo
 ----
 
+* Fix `--compute-gains` when trade history includes currencies that you are not currently using and/or are not currently available on the market.
 * Better organize core code
 * Make the exchange classes provide subclasses of the Trade & TradeSet objects, make them perform validation at creation time
 * Make Trade Objects throw on creation if amount is below minimum exchange amount
@@ -64,14 +65,14 @@ Todo
 
 Notes for arbitrary trade paths:
 
-1. for each currency, find its value in primary (no fees) 
-2. find values for target allocation 
+1. for each currency, find its value in primary (no fees)
+2. find values for target allocation
 3. group currencies by above, below, and within threshold of target
 4. for each above/below currency pair, find best trade paths.
 5. compute trade ratio with fees.
 6. compute ratio if source and destination were in then each converted to primary currency (no fees)
 7. rank these by highest to lowest ratio
-8. trade until source or dest reach target, then go onto next path. 
+8. trade until source or dest reach target, then go onto next path.
 
 Step 1 details: get value: find best trade path, return ratio without fees. (memoize?)
 
