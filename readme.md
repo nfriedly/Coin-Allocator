@@ -7,10 +7,13 @@ Taking the lessons from [The Intelligent Asset Allocator](http://www.amazon.com/
 
 Takes your target allocation and your current balances and suggests a set of trades to rebalance while optimizing for lowest fees and number of trades. Then, optionally, executes those trades for you.
 
+Now that [Cryptsy is offline](http://blog.cryptsy.com/), **this bot is no longer functional**. The exchange API is seperated from the core logic with the intention of eventually supporting other exchanges, but no other adapters currently exist. (And I lost all of my 'coins when Cryptsy went down, so I don't have anything left to experiement with.)
+
 WARNING
 ------------
 
 This software is in alpha stage. It is incomplete and almost guaranteed to have bugs. Using it may cause you to loose money or experience other issues. You have been warned.
+
 
 Setup & Usage
 -------------
