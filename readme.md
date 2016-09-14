@@ -4,20 +4,15 @@ Coin Allocator
 [![Build Status](https://travis-ci.org/nfriedly/Coin-Allocator.png?branch=master)](https://travis-ci.org/nfriedly/Coin-Allocator)
 
 ## Not under active development; not currently functional
-Coin Allocator was written to support multiple exchanges, but I only wrote an adapter for Cryptsy, which has since shutdown (taking all of my earnings with it). At this point, I have no plans to create any other adapters or continue development.
+Coin Allocator was written to support multiple exchanges, but I only wrote an adapter for Cryptsy, which has [since shutdown](http://blog.cryptsy.com/) (taking all of my earnings with it). At this point, I have no plans to create any other adapters or continue development.
 
 ----
 
-Taking the lessons from [The Intelligent Asset Allocator](http://www.amazon.com/gp/product/0071362363/ref=as_li_ss_il?ie=UTF8&camp=1789&creative=390957&creativeASIN=0071362363&linkCode=as2&tag=nfriedly-20) and applying them to Bitcoin and friends via [Cryptsy](https://www.cryptsy.com/users/register?refid=154285).
+Taking the lessons from [The Intelligent Asset Allocator](http://www.amazon.com/gp/product/0071362363/ref=as_li_ss_il?ie=UTF8&camp=1789&creative=390957&creativeASIN=0071362363&linkCode=as2&tag=nfriedly-20) and applying them to Bitcoin and friends via [Cryptsy](http://blog.cryptsy.com/).
 
 Takes your target allocation and your current balances and suggests a set of trades to rebalance while optimizing for lowest fees and number of trades. Then, optionally, executes those trades for you.
 
-Now that [Cryptsy is offline](http://blog.cryptsy.com/), **this bot is no longer functional**. The exchange API is seperated from the core logic with the intention of eventually supporting other exchanges, but no other adapters currently exist. (And I lost all of my 'coins when Cryptsy went down, so I don't have anything left to experiement with.)
-
-WARNING
-------------
-
-This software is in alpha stage. It is incomplete and almost guaranteed to have bugs. Using it may cause you to loose money or experience other issues. You have been warned.
+**WARNING:** This software is in alpha stage. It is incomplete and almost guaranteed to have bugs. Using it may cause you to loose money or experience other issues.
 
 
 Setup & Usage
