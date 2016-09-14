@@ -3,6 +3,11 @@ Coin Allocator
 
 [![Build Status](https://travis-ci.org/nfriedly/Coin-Allocator.png?branch=master)](https://travis-ci.org/nfriedly/Coin-Allocator)
 
+## Not under active development; not currently functional
+Coin Allocator was written to support multiple exchanges, but I only wrote an adapter for Cryptsy, which has since shutdown (taking all of my earnings with it). At this point, I have no plans to create any other adapters or continue development.
+
+----
+
 Taking the lessons from [The Intelligent Asset Allocator](http://www.amazon.com/gp/product/0071362363/ref=as_li_ss_il?ie=UTF8&camp=1789&creative=390957&creativeASIN=0071362363&linkCode=as2&tag=nfriedly-20) and applying them to Bitcoin and friends via [Cryptsy](https://www.cryptsy.com/users/register?refid=154285).
 
 Takes your target allocation and your current balances and suggests a set of trades to rebalance while optimizing for lowest fees and number of trades. Then, optionally, executes those trades for you.
