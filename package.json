@@ -23,7 +23,7 @@
   "homepage": "https://github.com/nfriedly/coin-allocator",
   "dependencies": {
     "cryptsy": "^0.1.3",
-    "lodash": "^2.4.1",
+    "lodash": "^4.17.20",
     "async": "^0.2.10",
     "yargs": "^1.2.1",
     "cli-table": "^0.3.0",
